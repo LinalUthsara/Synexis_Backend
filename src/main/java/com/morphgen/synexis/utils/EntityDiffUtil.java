@@ -25,7 +25,7 @@ public class EntityDiffUtil {
                 if (field.getType().equals(byte[].class)) {
                     boolean changed = !Arrays.equals((byte[]) oldValue, (byte[]) newValue);
                     if (changed) {
-                        changes.add("Changed '" + fieldName + "': image updated");
+                        changes.add("Updated '" + fieldName + "': image updated");
                     }
                     continue;
                 }
@@ -34,7 +34,7 @@ public class EntityDiffUtil {
                 if (oldValue != null && oldValue.equals(newValue)) continue;
                 if (newValue != null && newValue.equals(oldValue)) continue;
 
-                changes.add("Changed '" + fieldName + "' from '" + oldValue + "' to '" + newValue + "'");
+                changes.add("Updated '" + fieldName + "' from '" + oldValue + "' to '" + newValue + "'");
             } catch (IllegalAccessException e) {
                 changes.add("Could not access field: " + field.getName());
             }
