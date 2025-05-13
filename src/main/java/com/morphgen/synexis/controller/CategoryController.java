@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -76,6 +77,14 @@ public class CategoryController {
         categoryService.updateCategory(categoryId, categoryDto);
 
         return ResponseEntity.status(HttpStatus.OK).body("Category successfully updated!");
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId){
+        
+        categoryService.deleteCategory(categoryId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Category successfully deleted!");
     }
     
 }

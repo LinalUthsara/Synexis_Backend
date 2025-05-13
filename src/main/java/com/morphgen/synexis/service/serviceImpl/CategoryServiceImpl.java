@@ -15,6 +15,7 @@ import com.morphgen.synexis.dto.CategoryUpdateDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
 import com.morphgen.synexis.repository.CategoryRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -189,6 +190,24 @@ public class CategoryServiceImpl implements CategoryService {
             changes.isBlank() ? "No changes detected" : changes);
 
             return updatedCategory;
+    }
+
+    @Override
+    public void deleteCategory(Long categoryId) {
+        
+        Category category = categoryRepo.findById(categoryId)
+        .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
+
+        category.setCategoryStatus(Status.INACTIVE);
+
+        categoryRepo.save(category);
+
+            activityLogService.logActivity(
+            "Category", 
+            category.getCategoryId(), 
+            category.getCategoryName(), 
+            Action.DELETE, 
+            "Deleted Category: " + category.getCategoryName());
     }
 
 }
