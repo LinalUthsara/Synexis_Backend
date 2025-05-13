@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
+import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
@@ -84,6 +85,26 @@ public class CategoryServiceImpl implements CategoryService {
         }).collect(Collectors.toList());
 
         return categoryTableViewDtoList;
+    }
+
+    @Override
+    public CategoryViewDto viewCategoryById(Long categoryId) {
+        
+        Category category = categoryRepo.findById(categoryId)
+        .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
+
+        CategoryViewDto categoryViewDto = new CategoryViewDto();
+
+        categoryViewDto.setCategoryId(categoryId);
+        categoryViewDto.setCategoryName(category.getCategoryName());
+        categoryViewDto.setCategotyDescription(category.getCategoryDescription());
+        categoryViewDto.setCategotyStatus(category.getCategoryStatus());
+
+        if (category.getParentCategory() != null) {
+            categoryViewDto.setParentCategoryName(category.getParentCategory().getCategoryName());
+        }
+
+        return categoryViewDto;
     }
 
 }

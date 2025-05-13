@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
+import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.service.CategoryService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("api/synexis/category")
@@ -48,6 +50,13 @@ public class CategoryController {
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryTableViewDtoList);
     }
-    
-    
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryViewDto> viewCategoryById(@PathVariable Long categoryId){
+
+        CategoryViewDto categoryViewDto = categoryService.viewCategoryById(categoryId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(categoryViewDto);
+    }
+     
 }
