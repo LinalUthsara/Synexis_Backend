@@ -1,6 +1,7 @@
 package com.morphgen.synexis.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CategoryDto;
+import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.service.CategoryService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("api/synexis/category")
@@ -38,5 +40,14 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body("New Category successfully created!");
     
     }
+
+    @GetMapping
+    public ResponseEntity<List<CategoryTableViewDto>> viewBrandTable() {
+        
+        List<CategoryTableViewDto> categoryTableViewDtoList = categoryService.viewCategoryTable();
+
+        return ResponseEntity.status(HttpStatus.OK).body(categoryTableViewDtoList);
+    }
+    
     
 }

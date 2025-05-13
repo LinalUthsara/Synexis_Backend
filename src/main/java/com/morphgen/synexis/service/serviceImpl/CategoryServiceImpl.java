@@ -1,12 +1,15 @@
 package com.morphgen.synexis.service.serviceImpl;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.CategoryDto;
+import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
@@ -53,6 +56,34 @@ public class CategoryServiceImpl implements CategoryService {
             "Created Category: " + newCategory.getCategoryName());
 
         return newCategory;
+    }
+
+    @Override
+    public List<CategoryTableViewDto> viewCategoryTable() {
+        
+        List<Category> categories = categoryRepo.findAllByOrderByCategoryIdDesc();
+
+        List<CategoryTableViewDto> categoryTableViewDtoList = categories.stream().map(category ->{
+
+            CategoryTableViewDto categoryTableViewDto = new CategoryTableViewDto();
+
+            if (category.getParentCategory() != null) {
+                
+                categoryTableViewDto.setCategoryName(category.getCategoryName());
+                categoryTableViewDto.setMainCategoryName(category.getParentCategory().getCategoryName());
+            }else{
+
+                categoryTableViewDto.setMainCategoryName(category.getCategoryName());
+            }
+
+            categoryTableViewDto.setCategoryId(category.getCategoryId());
+            categoryTableViewDto.setCategoryDescription(category.getCategoryDescription());
+            categoryTableViewDto.setCategoryStatus(category.getCategoryStatus());
+
+            return categoryTableViewDto;
+        }).collect(Collectors.toList());
+
+        return categoryTableViewDtoList;
     }
 
 }
