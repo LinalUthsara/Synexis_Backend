@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
+import com.morphgen.synexis.dto.CategoryUpdateDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.enums.Action;
@@ -18,6 +19,7 @@ import com.morphgen.synexis.exception.CategoryNotFoundException;
 import com.morphgen.synexis.repository.CategoryRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CategoryService;
+import com.morphgen.synexis.utils.EntityDiffUtil;
 
 @Service
 
@@ -132,6 +134,61 @@ public class CategoryServiceImpl implements CategoryService {
         }).collect(Collectors.toList());
 
         return categorySideDropViewDtoList;
+    }
+
+    @Override
+    public Category updateCategory(Long categoryId, CategoryDto categoryDto) {
+        
+        Category category = categoryRepo.findById(categoryId)
+        .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
+
+        if (!category.getCategoryName().equalsIgnoreCase(categoryDto.getCategoryName())) {
+         Optional<Category> oldCategory = categoryRepo.findByCategoryName(categoryDto.getCategoryName());
+            if (oldCategory.isPresent()) {
+                throw new DataIntegrityViolationException("A Category with the name " + categoryDto.getCategoryName() + " already exists!");
+            }
+        }
+
+        CategoryUpdateDto existingCategory = CategoryUpdateDto.builder()
+        .categoryId(category.getCategoryId())
+        .categoryName(category.getCategoryName())
+        .categoryDescription(category.getCategoryDescription())
+        .categoryStatus(category.getCategoryStatus())
+        .parentCategory(category.getParentCategory() != null ? category.getParentCategory().getCategoryName() : null)
+        .build();
+
+        category.setCategoryName(categoryDto.getCategoryName());
+        category.setCategoryDescription(categoryDto.getCategoryDescription());
+
+        if (categoryDto.getParentCategoryId() != null) {
+            Category parentCategory = categoryRepo.findById(categoryDto.getParentCategoryId())
+            .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryDto.getParentCategoryId() + " is not found!"));
+            category.setParentCategory(parentCategory);
+        }
+        else{
+            category.setParentCategory(null);
+        }
+
+        Category updatedCategory = categoryRepo.save(category);
+
+        CategoryUpdateDto newCategory = CategoryUpdateDto.builder()
+        .categoryId(updatedCategory.getCategoryId())
+        .categoryName(updatedCategory.getCategoryName())
+        .categoryDescription(updatedCategory.getCategoryDescription())
+        .categoryStatus(updatedCategory.getCategoryStatus())
+        .parentCategory(updatedCategory.getParentCategory() != null ? updatedCategory.getParentCategory().getCategoryName() : null)
+        .build();
+
+        String changes = EntityDiffUtil.describeChanges(existingCategory, newCategory);
+
+        activityLogService.logActivity(
+            "Category", 
+            updatedCategory.getCategoryId(), 
+            updatedCategory.getCategoryName(), 
+            Action.UPDATE, 
+            changes.isBlank() ? "No changes detected" : changes);
+
+            return updatedCategory;
     }
 
 }

@@ -15,6 +15,7 @@ import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.service.CategoryService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,6 +69,13 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categorySideDropViewDtoList);
 
     }
+
+    @PutMapping("/{categoryId}")
+    public ResponseEntity<String> updateCategory(@PathVariable Long categoryId, @RequestBody CategoryDto categoryDto){
+        
+        categoryService.updateCategory(categoryId, categoryDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Category successfully updated!");
+    }
     
-     
 }

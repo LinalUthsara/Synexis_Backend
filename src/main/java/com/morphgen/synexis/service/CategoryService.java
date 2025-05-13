@@ -20,4 +20,6 @@ public interface CategoryService {
     List<CategorySideDropViewDto> viewCategorySideDrop();
     CategoryViewDto viewCategoryById(Long categoryId);
 
+    Category updateCategory(Long categoryId, CategoryDto categoryDto);
+
 }
