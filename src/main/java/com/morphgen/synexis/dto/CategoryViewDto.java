@@ -9,9 +9,13 @@ import lombok.Data;
 public class CategoryViewDto {
     
     private Long categoryId;
+
     private String categoryName;
+
     private String categotyDescription;
+
     private String parentCategoryName;
+    
     private Status categotyStatus;
 
 }

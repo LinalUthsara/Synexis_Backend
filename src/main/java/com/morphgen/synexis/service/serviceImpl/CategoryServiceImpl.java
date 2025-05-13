@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.CategoryDto;
+import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.entity.Category;
@@ -105,6 +106,32 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         return categoryViewDto;
+    }
+
+    @Override
+    public List<CategorySideDropViewDto> viewCategorySideDrop() {
+        
+        List<Category> categories = categoryRepo.findAllByOrderByCategoryIdDesc();
+
+        List<CategorySideDropViewDto> categorySideDropViewDtoList = categories.stream().map(category ->{
+
+            CategorySideDropViewDto categorySideDropViewDto = new CategorySideDropViewDto();
+
+            if (category.getParentCategory() != null) {
+                
+                categorySideDropViewDto.setCategoryName(category.getCategoryName());
+                categorySideDropViewDto.setMainCategoryName(category.getParentCategory().getCategoryName());
+            }else{
+
+                categorySideDropViewDto.setMainCategoryName(category.getCategoryName());
+            }
+
+            categorySideDropViewDto.setCategoryId(category.getCategoryId());
+
+            return categorySideDropViewDto;
+        }).collect(Collectors.toList());
+
+        return categorySideDropViewDtoList;
     }
 
 }

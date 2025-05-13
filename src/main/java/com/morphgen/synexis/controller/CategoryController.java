@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CategoryDto;
+import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.service.CategoryService;
@@ -58,5 +59,15 @@ public class CategoryController {
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryViewDto);
     }
+
+    @GetMapping("/sideDrop")
+    public ResponseEntity<List<CategorySideDropViewDto>> viewCategorySdieDrop(){
+
+        List<CategorySideDropViewDto> categorySideDropViewDtoList = categoryService.viewCategorySideDrop();
+
+        return ResponseEntity.status(HttpStatus.OK).body(categorySideDropViewDtoList);
+
+    }
+    
      
 }
