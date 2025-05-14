@@ -30,4 +30,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + categoryNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = UnitNotFoundException.class)
+    public ResponseEntity<String> UnitNotFoundExceptionHandler (UnitNotFoundException unitNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + unitNotFoundException.getMessage());
+    }
+
 }
