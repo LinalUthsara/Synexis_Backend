@@ -160,9 +160,11 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = brandRepo.findById(brandId)
         .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
 
-        Optional<Brand> oldBrand = brandRepo.findByBrandName(brandDto.getBrandName());
-        if(oldBrand.isPresent()){
-            throw new DataIntegrityViolationException("A Brand with the name " + brandDto.getBrandName() + " already exists!");
+        if(!brand.getBrandName().equalsIgnoreCase(brandDto.getBrandName())){
+            Optional<Brand> oldBrand = brandRepo.findByBrandName(brandDto.getBrandName());
+            if(oldBrand.isPresent()){
+                throw new DataIntegrityViolationException("A Brand with the name " + brandDto.getBrandName() + " already exists!");
+            }
         }
 
         Brand existingBrand = Brand.builder()
@@ -217,7 +219,12 @@ public class BrandServiceImpl implements BrandService {
 
         brandRepo.save(brand);
 
-        activityLogService.logActivity("Brand", brandId, brand.getBrandName(), Action.DELETE, "Deleted Brand: " + brand.getBrandName());
+        activityLogService.logActivity(
+            "Brand", 
+            brandId, 
+            brand.getBrandName(), 
+            Action.DELETE, 
+            "Deleted Brand: " + brand.getBrandName());
     }
 
 }
