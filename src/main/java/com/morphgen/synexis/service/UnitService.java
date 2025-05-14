@@ -22,4 +22,6 @@ public interface UnitService {
 
     Unit updateUnit(Long unitId, UnitDto unitDto);
 
+    void deleteUnit(Long unitId);
+
 }

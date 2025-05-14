@@ -15,6 +15,7 @@ import com.morphgen.synexis.dto.UnitUpdateDto;
 import com.morphgen.synexis.dto.UnitViewDto;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.UnitNotFoundException;
 import com.morphgen.synexis.repository.UnitRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -197,6 +198,24 @@ public class UnitServiceImpl implements UnitService {
 
             return updatedUnit;
 
+    }
+
+    @Override
+    public void deleteUnit(Long unitId) {
+        
+        Unit unit = unitRepo.findById(unitId)
+        .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
+
+        unit.setUnitStatus(Status.INACTIVE);
+
+        unitRepo.save(unit);
+
+        activityLogService.logActivity(
+            "Unit", 
+            unit.getUnitId(), 
+            unit.getUnitName(), 
+            Action.CREATE, 
+            "Deleted Unit: " + unit.getUnitName());
     }
 
 }

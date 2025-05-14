@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,6 +78,14 @@ public class UnitController {
         unitService.updateUnit(unitId, unitDto);
 
         return ResponseEntity.status(HttpStatus.OK).body("Unit successfully updated!");
+    }
+
+    @DeleteMapping("/{unitId}")
+    public ResponseEntity<String> deleteUnit(@PathVariable Long unitId){
+
+        unitService.deleteUnit(unitId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Unit successfully deleted!");
     }
 
 }
