@@ -25,4 +25,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + brandNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = CategoryNotFoundException.class)
+    public ResponseEntity<String> CategoryNotFoundExceptionHandler (CategoryNotFoundException categoryNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + categoryNotFoundException.getMessage());
+    }
+
 }
