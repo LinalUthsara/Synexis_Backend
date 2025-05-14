@@ -20,4 +20,6 @@ public interface UnitService {
     List<UnitSideDropViewDto> viewUnitSideDrop();
     UnitViewDto viewUnitById(Long unitId);
 
+    Unit updateUnit(Long unitId, UnitDto unitDto);
+
 }

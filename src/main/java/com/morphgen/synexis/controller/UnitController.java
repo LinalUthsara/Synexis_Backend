@@ -16,6 +16,7 @@ import com.morphgen.synexis.dto.UnitTableViewDto;
 import com.morphgen.synexis.dto.UnitViewDto;
 import com.morphgen.synexis.service.UnitService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -68,6 +69,14 @@ public class UnitController {
         UnitViewDto unitViewDto = unitService.viewUnitById(unitId);
 
         return ResponseEntity.status(HttpStatus.OK).body(unitViewDto);
+    }
+
+    @PutMapping("/{unitId}")
+    public ResponseEntity<String> updateUnit(@PathVariable Long unitId, @RequestBody UnitDto unitDto){
+        
+        unitService.updateUnit(unitId, unitDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Unit successfully updated!");
     }
 
 }
