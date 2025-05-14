@@ -1,12 +1,19 @@
 package com.morphgen.synexis.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.UnitDto;
+import com.morphgen.synexis.dto.UnitSideDropViewDto;
+import com.morphgen.synexis.dto.UnitTableViewDto;
+import com.morphgen.synexis.dto.UnitViewDto;
 import com.morphgen.synexis.service.UnitService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,6 +45,29 @@ public class UnitController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Unit successfully created!");
     }
-    
+
+    @GetMapping
+    public ResponseEntity<List<UnitTableViewDto>> viewUnitTable() {
+        
+        List<UnitTableViewDto> unitTableViewDtoList = unitService.viewUnitTable();
+
+        return ResponseEntity.status(HttpStatus.OK).body(unitTableViewDtoList);
+    }
+
+    @GetMapping("/sideDrop")
+    public ResponseEntity<List<UnitSideDropViewDto>> viewUnitSideDrop() {
+        
+        List<UnitSideDropViewDto> unitSideDropViewDtoList = unitService.viewUnitSideDrop();
+
+        return ResponseEntity.status(HttpStatus.OK).body(unitSideDropViewDtoList);
+    }
+
+    @GetMapping("/{unitId}")
+    public ResponseEntity<UnitViewDto> viewUnitById(@PathVariable Long unitId){
+
+        UnitViewDto unitViewDto = unitService.viewUnitById(unitId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(unitViewDto);
+    }
 
 }

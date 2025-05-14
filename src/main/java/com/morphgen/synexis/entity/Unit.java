@@ -2,8 +2,12 @@ package com.morphgen.synexis.entity;
 
 import java.util.Set;
 
+import com.morphgen.synexis.enums.Status;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,8 +32,13 @@ public class Unit {
 
     private Boolean unitAllowDecimal;
 
+    @Enumerated(EnumType.STRING)
+    private Status unitStatus;
+
     @PrePersist
     public void onCreate(){
+        this.unitStatus = Status.ACTIVE;
+        
         if(unitAllowDecimal == null){
             unitAllowDecimal = true;
         }
