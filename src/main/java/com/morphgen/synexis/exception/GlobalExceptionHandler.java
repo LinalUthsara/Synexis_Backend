@@ -40,4 +40,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + materialNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = EmployeeNotFoundException.class)
+    public ResponseEntity<String> EmployeeNotFoundExceptionHandler (EmployeeNotFoundException employeeNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + employeeNotFoundException.getMessage());
+    }
+
 }

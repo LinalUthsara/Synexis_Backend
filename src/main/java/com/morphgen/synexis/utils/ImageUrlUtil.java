@@ -17,5 +17,12 @@ public class ImageUrlUtil {
             .path(String.valueOf(materialId))
             .toUriString();
     }
+
+    public static String constructEmployeeImageUrl(Long employeeId) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/synexis/employee/image/")
+            .path(String.valueOf(employeeId))
+            .toUriString();
+    }
        
 }
