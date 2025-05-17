@@ -38,7 +38,7 @@ public class Unit {
     private Status unitStatus;
 
     @PrePersist
-    public void onCreate(){
+    protected void onCreate(){
         this.unitStatus = Status.ACTIVE;
         
         if(unitAllowDecimal == null){
