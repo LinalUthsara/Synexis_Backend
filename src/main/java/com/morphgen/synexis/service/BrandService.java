@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.BrandDropDownDto;
 import com.morphgen.synexis.dto.BrandDto;
 import com.morphgen.synexis.dto.BrandSideDropViewDto;
 import com.morphgen.synexis.dto.BrandTableViewDto;
@@ -21,6 +22,8 @@ public interface BrandService {
     List<BrandTableViewDto> viewBrandTable();
     List<BrandSideDropViewDto> viewBrandSideDrop();
     BrandViewDto viewBrandById(Long brandId);
+
+    List<BrandDropDownDto> brandDropDown();
 
     Brand updateBrand(Long brandId, BrandDto brandDto);
     

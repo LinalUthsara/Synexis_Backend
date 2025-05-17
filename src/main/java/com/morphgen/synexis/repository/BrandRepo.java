@@ -14,5 +14,6 @@ public interface BrandRepo extends JpaRepository<Brand, Long> {
 
     Optional<Brand> findByBrandName(String brandName);
     List<Brand> findAllByOrderByBrandIdDesc();
+    List<Brand> findAllByOrderByBrandNameAsc();
     
 }

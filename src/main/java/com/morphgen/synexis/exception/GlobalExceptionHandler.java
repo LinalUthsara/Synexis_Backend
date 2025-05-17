@@ -35,4 +35,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + unitNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = MaterialNotFoundException.class)
+    public ResponseEntity<String> MaterialNotFoundExceptionHandler (MaterialNotFoundException materialNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + materialNotFoundException.getMessage());
+    }
+
 }

@@ -1,7 +1,9 @@
 package com.morphgen.synexis.entity;
 
+import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morphgen.synexis.enums.Status;
 
 import jakarta.persistence.CascadeType;
@@ -46,11 +48,21 @@ public class Unit {
 
     private Double unitConversionFactor;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "baseUnitId")
     private Unit baseUnit;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "baseUnit", cascade = CascadeType.ALL)
     private Set<Unit> derivedUnits;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "baseUnit")
+    private List<Material> baseUnitMaterials;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "otherUnit")
+    private List<Material> otherUnitMaterials;
 
 }

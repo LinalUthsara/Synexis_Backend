@@ -11,15 +11,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.BrandDropDownDto;
 import com.morphgen.synexis.dto.BrandDto;
 import com.morphgen.synexis.dto.BrandSideDropViewDto;
 import com.morphgen.synexis.dto.BrandTableViewDto;
 import com.morphgen.synexis.dto.BrandViewDto;
+import com.morphgen.synexis.dto.MaterialTableViewDto;
 import com.morphgen.synexis.entity.Brand;
+import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
 import com.morphgen.synexis.repository.BrandRepo;
+import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.BrandService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
@@ -34,6 +38,9 @@ public class BrandServiceImpl implements BrandService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private MaterialRepo materialRepo;
 
     @Override
     public Brand createBrand(BrandDto brandDto) {
@@ -136,6 +143,8 @@ public class BrandServiceImpl implements BrandService {
         Brand brand = brandRepo.findById(brandId)
         .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
 
+        List<Material> materials = materialRepo.findMaterialsByBrandId(brandId);
+
         BrandViewDto brandViewDto = new BrandViewDto();
 
         brandViewDto.setBrandId(brandId);
@@ -149,6 +158,28 @@ public class BrandServiceImpl implements BrandService {
             String imageUrl = ImageUrlUtil.constructImageUrl(brand.getBrandId());
             brandViewDto.setBrandImageUrl(imageUrl);
         }
+
+        List<MaterialTableViewDto> materialTableViewDtoList = materials.stream().map(material ->{
+
+            MaterialTableViewDto materialTableViewDto = new MaterialTableViewDto();
+
+            materialTableViewDto.setMaterialId(material.getMaterialId());
+            materialTableViewDto.setMaterialName(material.getMaterialName());
+            materialTableViewDto.setMaterialDescription(material.getMaterialDescription());
+            materialTableViewDto.setMaterialSKU(material.getMaterialSKU());
+            materialTableViewDto.setMaterialPurchasePrice(material.getMaterialPurchasePrice());
+            materialTableViewDto.setQuantityInHand(material.getQuantityInHand());
+            materialTableViewDto.setMaterialStatus(material.getMaterialStatus());
+
+            if (material.getMaterialImage() != null) {
+                String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
+                materialTableViewDto.setMaterialImageUrl(imageUrl);
+            }
+
+            return materialTableViewDto;
+        }).collect(Collectors.toList());
+
+        brandViewDto.setMaterialTableViewDtoList(materialTableViewDtoList);
 
         return brandViewDto;
 
@@ -225,6 +256,24 @@ public class BrandServiceImpl implements BrandService {
             brand.getBrandName(), 
             Action.DELETE, 
             "Deleted Brand: " + brand.getBrandName());
+    }
+
+    @Override
+    public List<BrandDropDownDto> brandDropDown() {
+        
+        List<Brand> brands = brandRepo.findAllByOrderByBrandNameAsc();
+
+        List<BrandDropDownDto> brandDropDownDtoList = brands.stream().map(brand ->{
+
+            BrandDropDownDto brandDropDownDto = new BrandDropDownDto();
+
+            brandDropDownDto.setBrandId(brand.getBrandId());
+            brandDropDownDto.setBrandName(brand.getBrandName());
+
+            return brandDropDownDto;
+        }).collect(Collectors.toList());
+
+        return brandDropDownDtoList;
     }
 
 }

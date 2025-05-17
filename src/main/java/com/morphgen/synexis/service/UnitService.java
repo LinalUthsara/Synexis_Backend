@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.UnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDto;
 import com.morphgen.synexis.dto.UnitSideDropViewDto;
 import com.morphgen.synexis.dto.UnitTableViewDto;
@@ -19,6 +20,9 @@ public interface UnitService {
     List<UnitTableViewDto> viewUnitTable();
     List<UnitSideDropViewDto> viewUnitSideDrop();
     UnitViewDto viewUnitById(Long unitId);
+
+    List<UnitDropDownDto> baseUnitDropDown();
+    List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId);
 
     Unit updateUnit(Long unitId, UnitDto unitDto);
 

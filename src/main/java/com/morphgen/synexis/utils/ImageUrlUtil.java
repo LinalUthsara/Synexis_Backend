@@ -10,5 +10,12 @@ public class ImageUrlUtil {
             .path(String.valueOf(brandId))
             .toUriString();
     }
-    
+
+    public static String constructMaterialImageUrl(Long materialId) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/synexis/material/image/")
+            .path(String.valueOf(materialId))
+            .toUriString();
+    }
+       
 }

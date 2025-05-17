@@ -8,19 +8,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.CategoryDropDownDto;
 import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryUpdateDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
+import com.morphgen.synexis.dto.MaterialTableViewDto;
 import com.morphgen.synexis.entity.Category;
+import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
 import com.morphgen.synexis.repository.CategoryRepo;
+import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CategoryService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
+import com.morphgen.synexis.utils.ImageUrlUtil;
 
 @Service
 
@@ -31,6 +36,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private MaterialRepo materialRepo;
 
     @Override
     public Category createCategory(CategoryDto categoryDto) {
@@ -97,6 +105,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepo.findById(categoryId)
         .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
 
+        List<Material> materials = materialRepo.findMaterialsByCategoryId(categoryId);
+
         CategoryViewDto categoryViewDto = new CategoryViewDto();
 
         categoryViewDto.setCategoryId(categoryId);
@@ -107,6 +117,28 @@ public class CategoryServiceImpl implements CategoryService {
         if (category.getParentCategory() != null) {
             categoryViewDto.setParentCategoryName(category.getParentCategory().getCategoryName());
         }
+
+        List<MaterialTableViewDto> materialTableViewDtoList = materials.stream().map(material ->{
+
+            MaterialTableViewDto materialTableViewDto = new MaterialTableViewDto();
+
+            materialTableViewDto.setMaterialId(material.getMaterialId());
+            materialTableViewDto.setMaterialName(material.getMaterialName());
+            materialTableViewDto.setMaterialDescription(material.getMaterialDescription());
+            materialTableViewDto.setMaterialSKU(material.getMaterialSKU());
+            materialTableViewDto.setMaterialPurchasePrice(material.getMaterialPurchasePrice());
+            materialTableViewDto.setQuantityInHand(material.getQuantityInHand());
+            materialTableViewDto.setMaterialStatus(material.getMaterialStatus());
+
+            if (material.getMaterialImage() != null) {
+                String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
+                materialTableViewDto.setMaterialImageUrl(imageUrl);
+            }
+
+            return materialTableViewDto;
+        }).collect(Collectors.toList());
+
+        categoryViewDto.setMaterialTableViewDtoList(materialTableViewDtoList);
 
         return categoryViewDto;
     }
@@ -208,6 +240,42 @@ public class CategoryServiceImpl implements CategoryService {
             category.getCategoryName(), 
             Action.DELETE, 
             "Deleted Category: " + category.getCategoryName());
+    }
+
+    @Override
+    public List<CategoryDropDownDto> categoryDropDown() {
+        
+        List<Category> categories = categoryRepo.findByParentCategoryIsNullOrderByCategoryNameAsc();
+
+        List<CategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
+
+            CategoryDropDownDto categoryDropDownDto = new CategoryDropDownDto();
+
+            categoryDropDownDto.setCategoryId(category.getCategoryId());
+            categoryDropDownDto.setCategoryName(category.getCategoryName());
+
+            return categoryDropDownDto;
+        }).collect(Collectors.toList());
+
+        return categoryDropDownDtoList;
+    }
+
+    @Override
+    public List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId) {
+        
+        List<Category> categories = categoryRepo.findByParentCategory_CategoryIdOrderByCategoryNameAsc(parentCategoryId);
+
+        List<CategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
+
+            CategoryDropDownDto categoryDropDownDto = new CategoryDropDownDto();
+
+            categoryDropDownDto.setCategoryId(category.getCategoryId());
+            categoryDropDownDto.setCategoryName(category.getCategoryName());
+
+            return categoryDropDownDto;
+        }).collect(Collectors.toList());
+
+        return categoryDropDownDtoList;
     }
 
 }
