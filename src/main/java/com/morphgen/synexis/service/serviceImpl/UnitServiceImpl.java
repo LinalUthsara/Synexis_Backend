@@ -8,15 +8,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.AssociatedMaterialDto;
+import com.morphgen.synexis.dto.UnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDto;
 import com.morphgen.synexis.dto.UnitSideDropViewDto;
 import com.morphgen.synexis.dto.UnitTableViewDto;
 import com.morphgen.synexis.dto.UnitUpdateDto;
 import com.morphgen.synexis.dto.UnitViewDto;
+import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.UnitNotFoundException;
+import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.repository.UnitRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.UnitService;
@@ -31,6 +35,9 @@ public class UnitServiceImpl implements UnitService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private MaterialRepo materialRepo;
 
     @Override
     public Unit createUnit(UnitDto unitDto) {
@@ -119,6 +126,8 @@ public class UnitServiceImpl implements UnitService {
         Unit unit = unitRepo.findById(unitId)
         .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
 
+        List<Material> materials = materialRepo.findMaterialsByUnitId(unitId);
+
         UnitViewDto unitViewDto = new UnitViewDto();
 
         unitViewDto.setUnitId(unitId);
@@ -126,6 +135,18 @@ public class UnitServiceImpl implements UnitService {
         unitViewDto.setUnitShortName(unit.getUnitShortName());
         unitViewDto.setUnitAllowDecimal(unit.getUnitAllowDecimal());
         unitViewDto.setUnitStatus(unit.getUnitStatus());
+
+        List<AssociatedMaterialDto> associatedMaterialDtoList = materials.stream().map(material ->{
+            
+            AssociatedMaterialDto associatedMaterialDto = new AssociatedMaterialDto();
+
+            associatedMaterialDto.setMaterialName(material.getMaterialName());
+            associatedMaterialDto.setMaterialSKU(material.getMaterialSKU());
+
+            return associatedMaterialDto;
+        }).collect(Collectors.toList());
+
+        unitViewDto.setAssociatedMaterialList(associatedMaterialDtoList);
 
         return unitViewDto;
     }
@@ -216,6 +237,42 @@ public class UnitServiceImpl implements UnitService {
             unit.getUnitName(), 
             Action.CREATE, 
             "Deleted Unit: " + unit.getUnitName());
+    }
+
+    @Override
+    public List<UnitDropDownDto> baseUnitDropDown() {
+        
+        List<Unit> units = unitRepo.findByBaseUnitIsNullOrderByUnitNameAsc();
+
+        List<UnitDropDownDto> unitDropDownDtoList = units.stream().map(unit ->{
+
+            UnitDropDownDto unitDropDownDto = new UnitDropDownDto();
+
+            unitDropDownDto.setUnitId(unit.getUnitId());
+            unitDropDownDto.setUnitName(unit.getUnitName());
+
+            return unitDropDownDto;
+        }).collect(Collectors.toList());
+
+        return unitDropDownDtoList;
+    }
+
+    @Override
+    public List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId) {
+                
+        List<Unit> units = unitRepo.findByBaseUnit_UnitIdOrderByUnitNameAsc(baseUnitId);
+
+        List<UnitDropDownDto> unitDropDownDtoList = units.stream().map(unit ->{
+
+            UnitDropDownDto unitDropDownDto = new UnitDropDownDto();
+
+            unitDropDownDto.setUnitId(unit.getUnitId());
+            unitDropDownDto.setUnitName(unit.getUnitName());
+
+            return unitDropDownDto;
+        }).collect(Collectors.toList());
+
+        return unitDropDownDtoList;
     }
 
 }

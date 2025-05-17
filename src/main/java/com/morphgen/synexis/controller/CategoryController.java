@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.CategoryDropDownDto;
 import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
@@ -69,6 +70,22 @@ public class CategoryController {
 
         return ResponseEntity.status(HttpStatus.OK).body(categorySideDropViewDtoList);
 
+    }
+
+    @GetMapping("/categoryDropDown")
+    public ResponseEntity<List<CategoryDropDownDto>> categoryDropDown(){
+
+        List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.categoryDropDown();
+
+        return ResponseEntity.status(HttpStatus.OK).body(categoryDropDownDtoList);
+    }
+
+    @GetMapping("/subDropDown/{parentCategoryId}")
+    public ResponseEntity<List<CategoryDropDownDto>> subCategoryDropDown(@PathVariable Long parentCategoryId){
+
+        List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.subCategoryDropDown(parentCategoryId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(categoryDropDownDtoList);
     }
 
     @PutMapping("/{categoryId}")

@@ -1,5 +1,8 @@
 package com.morphgen.synexis.entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morphgen.synexis.enums.Status;
 
 import jakarta.persistence.Entity;
@@ -9,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,5 +49,9 @@ public class Brand {
     protected void onCreate(){
         this.brandStatus = Status.ACTIVE;
     }
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "brand")
+    private List<Material> materials;
 
 }

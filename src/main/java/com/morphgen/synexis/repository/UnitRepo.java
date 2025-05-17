@@ -15,5 +15,6 @@ public interface UnitRepo extends JpaRepository<Unit, Long> {
     Optional<Unit> findByUnitName(String unitName);
     Optional<Unit> findByUnitShortName(String unitShortName);
     List<Unit> findAllByOrderByUnitIdDesc();
-    
+    List<Unit> findByBaseUnitIsNullOrderByUnitNameAsc();
+    List<Unit> findByBaseUnit_UnitIdOrderByUnitNameAsc(Long baseUnitId);
 }

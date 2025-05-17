@@ -1,5 +1,7 @@
 package com.morphgen.synexis.dto;
 
+import java.util.List;
+
 import com.morphgen.synexis.enums.Status;
 
 import lombok.Data;
@@ -17,5 +19,7 @@ public class UnitViewDto {
     private Boolean unitAllowDecimal;
 
     private Status unitStatus;
+
+    private List<AssociatedMaterialDto> associatedMaterialList;
 
 }

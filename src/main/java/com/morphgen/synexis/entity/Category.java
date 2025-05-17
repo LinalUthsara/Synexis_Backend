@@ -1,7 +1,9 @@
 package com.morphgen.synexis.entity;
 
+import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morphgen.synexis.enums.Status;
 
 import jakarta.persistence.CascadeType;
@@ -44,11 +46,21 @@ public class Category {
         this.categoryStatus = Status.ACTIVE;
     }
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "parentCategoryId")
     private Category parentCategory;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
     private Set<Category> subCategories;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "category")
+    private List<Material> categoryMaterials;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "subCategory")
+    private List<Material> subCategoryMaterials;
 
 }

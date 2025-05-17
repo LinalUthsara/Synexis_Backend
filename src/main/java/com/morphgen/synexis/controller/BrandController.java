@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.BrandDropDownDto;
 import com.morphgen.synexis.dto.BrandDto;
 import com.morphgen.synexis.dto.BrandSideDropViewDto;
 import com.morphgen.synexis.dto.BrandTableViewDto;
@@ -69,6 +70,15 @@ public class BrandController {
         List<BrandSideDropViewDto> brandSideDropViewDtoList = brandService.viewBrandSideDrop();
 
         return ResponseEntity.status(HttpStatus.OK).body(brandSideDropViewDtoList);
+
+    }
+
+    @GetMapping("/brandDropDown")
+    public ResponseEntity<List<BrandDropDownDto>> brandDropDown(){
+
+        List<BrandDropDownDto> brandDropDownDtoList = brandService.brandDropDown();
+
+        return ResponseEntity.status(HttpStatus.OK).body(brandDropDownDtoList);
 
     }
 
