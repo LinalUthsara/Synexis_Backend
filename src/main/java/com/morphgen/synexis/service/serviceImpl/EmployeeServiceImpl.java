@@ -18,6 +18,7 @@ import com.morphgen.synexis.dto.EmployeeViewDto;
 import com.morphgen.synexis.entity.Address;
 import com.morphgen.synexis.entity.Employee;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.EmployeeNotFoundException;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -264,13 +265,31 @@ public class EmployeeServiceImpl implements EmployeeService {
         String changes = EntityDiffUtil.describeChanges(existingEmployee, updatedEmployee);
 
         activityLogService.logActivity(
-            "Brand", 
+            "Employee", 
             updatedEmployee.getEmployeeId(),
             updatedEmployee.getEmployeeFirstName(), 
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
         return updatedEmployee;
+    }
+
+    @Override
+    public void deleteEmployee(Long employeeId) {
+        
+        Employee employee = employeeRepo.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
+
+        employee.setEmployeeStatus(Status.INACTIVE);
+
+        employeeRepo.save(employee);
+
+        activityLogService.logActivity(
+            "Employee", 
+            employee.getEmployeeId(),
+            employee.getEmployeeFirstName(), 
+            Action.DELETE, 
+            "Deleted Employee: " + employee.getEmployeeFirstName());
     }
 
 }

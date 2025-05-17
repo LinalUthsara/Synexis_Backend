@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,7 +71,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<EmployeeViewDto> viewBrandById(@PathVariable Long employeeId){
+    public ResponseEntity<EmployeeViewDto> viewEmployeeById(@PathVariable Long employeeId){
 
         EmployeeViewDto employeeViewDto = employeeService.viewEmployeeById(employeeId);
 
@@ -78,11 +79,19 @@ public class EmployeeController {
     }
 
     @PutMapping("/{employeeId}")
-    public ResponseEntity<String> updateBrand(@PathVariable Long employeeId, @ModelAttribute EmployeeDto employeeDto){
+    public ResponseEntity<String> updateEmployee(@PathVariable Long employeeId, @ModelAttribute EmployeeDto employeeDto){
         
         employeeService.updateEmployee(employeeId, employeeDto);
 
         return ResponseEntity.status(HttpStatus.OK).body("Employee successfully updated!");
+    }
+
+    @DeleteMapping("/{employeeId}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable Long employeeId){
+
+        employeeService.deleteEmployee(employeeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Employee successfully deleted!");
     }
 
 }
