@@ -1,19 +1,25 @@
 package com.morphgen.synexis.service.serviceImpl;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeTableViewDto;
 import com.morphgen.synexis.entity.Address;
 import com.morphgen.synexis.entity.Employee;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.EmployeeService;
+import com.morphgen.synexis.utils.ImageUrlUtil;
 
 @Service
 
@@ -79,5 +85,43 @@ public class EmployeeServiceImpl implements EmployeeService {
             "Created Employee: " + newEmployee.getEmployeeFirstName());
 
         return newEmployee;
+    }
+
+    @Override
+    public ResponseEntity<byte[]> viewEmployeeImage(Long employeeId) {
+        
+        return employeeRepo.findById(employeeId)
+            .filter(employee -> employee.getEmployeeImage() != null)
+            .map(employee -> ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                .body(employee.getEmployeeImage()))
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public List<EmployeeTableViewDto> viewEmployeeTable() {
+        
+        List<Employee> employees = employeeRepo.findAllByOrderByEmployeeIdDesc();
+
+        List<EmployeeTableViewDto> employeeTableViewDtoList = employees.stream().map(employee ->{
+
+            EmployeeTableViewDto employeeTableViewDto = new EmployeeTableViewDto();
+
+            employeeTableViewDto.setEmployeeId(employee.getEmployeeId());
+            employeeTableViewDto.setEmployeeName(employee.getEmployeePrefix() + employee.getEmployeeFirstName());
+            employeeTableViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
+            employeeTableViewDto.setEmployeeEmail(employee.getEmployeeEmail());
+            employeeTableViewDto.setEmployeeStatus(employee.getEmployeeStatus());
+            employeeTableViewDto.setRole(employee.getRole());
+
+            if (employee.getEmployeeImage() != null) {
+                String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
+                employeeTableViewDto.setEmployeeImageUrl(imageUrl);
+            }
+
+            return employeeTableViewDto;
+        }).collect(Collectors.toList());
+
+        return employeeTableViewDtoList;
     }
 }

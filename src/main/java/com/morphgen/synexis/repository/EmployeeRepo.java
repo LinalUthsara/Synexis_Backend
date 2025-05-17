@@ -1,5 +1,6 @@
 package com.morphgen.synexis.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,6 @@ public interface EmployeeRepo extends JpaRepository<Employee, Long> {
     
     Optional<Employee> findByEmployeeEmail(String employeeEmail);
     Optional<Employee> findByEmployeeNIC(String employeeNIC);
+
+    List<Employee> findAllByOrderByEmployeeIdDesc();
 }

@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import com.morphgen.synexis.enums.Status;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,6 +44,7 @@ public class Employee {
 
     private String Role;
 
+    @Enumerated(EnumType.STRING)
     private Status employeeStatus;
 
     @PrePersist
