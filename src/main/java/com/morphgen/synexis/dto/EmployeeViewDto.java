@@ -2,14 +2,14 @@ package com.morphgen.synexis.dto;
 
 import java.time.LocalDate;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import lombok.Data;
 
 @Data
 
-public class EmployeeDto {
+public class EmployeeViewDto {
     
+    private Long employeeId;
+
     private String employeePrefix;
 
     private String employeeFirstName;
@@ -22,7 +22,7 @@ public class EmployeeDto {
 
     private String employeeGender;
 
-    private MultipartFile employeeImage;
+    private String employeeImageUrl;
 
     private String employeeEmail;
 

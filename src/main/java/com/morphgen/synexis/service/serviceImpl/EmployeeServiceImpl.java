@@ -12,10 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
+import com.morphgen.synexis.dto.EmployeeViewDto;
 import com.morphgen.synexis.entity.Address;
 import com.morphgen.synexis.entity.Employee;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.exception.EmployeeNotFoundException;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.EmployeeService;
@@ -51,6 +54,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmployeeLastName(employeeDto.getEmployeeLastName());
         employee.setEmployeeNIC(employeeDto.getEmployeeNIC());
         employee.setEmployeeDOB(employeeDto.getEmployeeDOB());
+        employee.setEmployeeGender(employeeDto.getEmployeeGender());
 
         try{
             if (employeeDto.getEmployeeImage() != null && !employeeDto.getEmployeeImage().isEmpty()) {
@@ -108,7 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             EmployeeTableViewDto employeeTableViewDto = new EmployeeTableViewDto();
 
             employeeTableViewDto.setEmployeeId(employee.getEmployeeId());
-            employeeTableViewDto.setEmployeeName(employee.getEmployeePrefix() + employee.getEmployeeFirstName());
+            employeeTableViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName());
             employeeTableViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
             employeeTableViewDto.setEmployeeEmail(employee.getEmployeeEmail());
             employeeTableViewDto.setEmployeeStatus(employee.getEmployeeStatus());
@@ -124,4 +128,59 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeTableViewDtoList;
     }
+
+    @Override
+    public List<EmployeeSideDropViewDto> viewEmployeeSideDrop() {
+        
+        List<Employee> employees = employeeRepo.findAllByOrderByEmployeeIdDesc();
+
+        List<EmployeeSideDropViewDto> employeeSideDropViewDtoList = employees.stream().map(employee ->{
+
+            EmployeeSideDropViewDto employeeSideDropViewDto = new EmployeeSideDropViewDto();
+
+            employeeSideDropViewDto.setEmployeeId(employee.getEmployeeId());
+            employeeSideDropViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName());
+
+            if (employee.getEmployeeImage() != null) {
+                String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
+                employeeSideDropViewDto.setEmployeeImageUrl(imageUrl);
+            }
+
+            return employeeSideDropViewDto;
+        }).collect(Collectors.toList());
+
+        return employeeSideDropViewDtoList;
+    }
+
+    @Override
+    public EmployeeViewDto viewEmployeeById(Long employeeId) {
+        
+        Employee employee = employeeRepo.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
+
+        EmployeeViewDto employeeViewDto = new EmployeeViewDto();
+
+        employeeViewDto.setEmployeeId(employee.getEmployeeId());
+        employeeViewDto.setEmployeePrefix(employee.getEmployeePrefix());
+        employeeViewDto.setEmployeeFirstName(employee.getEmployeeFirstName());
+        employeeViewDto.setEmployeeLastName(employee.getEmployeeLastName());
+        employeeViewDto.setEmployeeNIC(employee.getEmployeeNIC());
+        employeeViewDto.setEmployeeDOB(employee.getEmployeeDOB());
+        employeeViewDto.setEmployeeGender(employee.getEmployeeGender());
+        employeeViewDto.setEmployeeEmail(employee.getEmployeeEmail());
+        employeeViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
+        employeeViewDto.setAddressLine1(employee.getEmployeeAddress().getAddressLine1());
+        employeeViewDto.setAddressLine2(employee.getEmployeeAddress().getAddressLine2());
+        employeeViewDto.setCity(employee.getEmployeeAddress().getCity());
+        employeeViewDto.setZipCode(employee.getEmployeeAddress().getZipCode());
+        employeeViewDto.setRole(employee.getRole());
+
+        if (employee.getEmployeeImage() != null) {
+                String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
+                employeeViewDto.setEmployeeImageUrl(imageUrl);
+            }
+
+        return employeeViewDto;
+    }
+
 }

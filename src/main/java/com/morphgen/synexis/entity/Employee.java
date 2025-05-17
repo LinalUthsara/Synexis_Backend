@@ -33,6 +33,8 @@ public class Employee {
 
     private LocalDate employeeDOB;
 
+    private String employeeGender;
+
     @Lob
     private byte[] employeeImage;
 

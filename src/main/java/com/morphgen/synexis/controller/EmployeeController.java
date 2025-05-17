@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
+import com.morphgen.synexis.dto.EmployeeViewDto;
 import com.morphgen.synexis.service.EmployeeService;
 
 @RestController
@@ -56,4 +58,22 @@ public class EmployeeController {
         
         return ResponseEntity.status(HttpStatus.OK).body(employeeTableViewDtoList);
     }
+
+    @GetMapping("/sideDrop")
+    public ResponseEntity<List<EmployeeSideDropViewDto>> viewEmployeeSideDrop(){
+
+        List<EmployeeSideDropViewDto> employeeSideDropViewDtoList = employeeService.viewEmployeeSideDrop();
+
+        return ResponseEntity.status(HttpStatus.OK).body(employeeSideDropViewDtoList);
+
+    }
+
+    @GetMapping("/{employeeId}")
+    public ResponseEntity<EmployeeViewDto> viewBrandById(@PathVariable Long employeeId){
+
+        EmployeeViewDto employeeViewDto = employeeService.viewEmployeeById(employeeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(employeeViewDto);
+    }
+
 }
