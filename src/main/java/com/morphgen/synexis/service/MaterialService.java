@@ -28,7 +28,3 @@ public interface MaterialService {
     void deleteMaterial(Long materialId);
     
 }
-    // List<BrandDropDownDto> brandDropDown();
-
-    
-    // void deleteBrand(Long brandId);
