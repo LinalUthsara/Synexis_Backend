@@ -21,4 +21,6 @@ public interface EmployeeService {
     List<EmployeeTableViewDto> viewEmployeeTable();
     List<EmployeeSideDropViewDto> viewEmployeeSideDrop();
     EmployeeViewDto viewEmployeeById(Long employeeId);
+
+    Employee updateEmployee(Long employeeId, EmployeeDto employeeDto);
 }

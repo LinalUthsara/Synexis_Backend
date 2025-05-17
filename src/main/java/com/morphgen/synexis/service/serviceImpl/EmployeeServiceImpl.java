@@ -22,6 +22,7 @@ import com.morphgen.synexis.exception.EmployeeNotFoundException;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.EmployeeService;
+import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
 
 @Service
@@ -181,6 +182,95 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
 
         return employeeViewDto;
+    }
+
+    @Override
+    public Employee updateEmployee(Long employeeId, EmployeeDto employeeDto) {
+        
+        Employee employee = employeeRepo.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
+
+        if (!employee.getEmployeeEmail().equalsIgnoreCase(employeeDto.getEmployeeEmail())) {
+            Optional<Employee> existingEmployeeEmail = employeeRepo.findByEmployeeEmail(employeeDto.getEmployeeEmail());
+            if (existingEmployeeEmail.isPresent()){
+                throw new DataIntegrityViolationException("An Employee with the email " + employeeDto.getEmployeeEmail() + " already exists!");
+            }
+        }
+        if (!employee.getEmployeeEmail().equalsIgnoreCase(employeeDto.getEmployeeEmail())) {
+            Optional<Employee> existingEmployeeNIC = employeeRepo.findByEmployeeNIC(employeeDto.getEmployeeNIC());
+            if (existingEmployeeNIC.isPresent()){
+                throw new DataIntegrityViolationException("An Employee with the NIC " + employeeDto.getEmployeeNIC() + " already exists!");
+            }
+        }
+
+        Address existingAddress = new Address();
+        existingAddress.setAddressLine1(employee.getEmployeeAddress().getAddressLine1());
+        existingAddress.setAddressLine2(employee.getEmployeeAddress().getAddressLine2());
+        existingAddress.setCity(employee.getEmployeeAddress().getCity());
+        existingAddress.setZipCode(employee.getEmployeeAddress().getZipCode());
+
+        Employee existingEmployee = Employee.builder()
+        .employeeId(employee.getEmployeeId())
+        .employeePrefix(employee.getEmployeePrefix())
+        .employeeFirstName(employee.getEmployeeFirstName())
+        .employeeLastName(employee.getEmployeeLastName())
+        .employeeNIC(employee.getEmployeeNIC())
+        .employeeDOB(employee.getEmployeeDOB())
+        .employeeGender(employee.getEmployeeGender())
+        .employeeEmail(employee.getEmployeeEmail())
+        .employeePhoneNumber(employee.getEmployeePhoneNumber())
+        .Role(employee.getRole())
+        .employeeImage(employee.getEmployeeImage() != null ? employee.getEmployeeImage().clone() : null)
+        .employeeAddress(existingAddress)
+        .employeeStatus(employee.getEmployeeStatus())
+        .build();
+
+
+        employee.setEmployeePrefix(employeeDto.getEmployeePrefix());
+        employee.setEmployeeFirstName(employeeDto.getEmployeeFirstName());
+        employee.setEmployeeLastName(employeeDto.getEmployeeLastName());
+        employee.setEmployeeNIC(employeeDto.getEmployeeNIC());
+        employee.setEmployeeDOB(employeeDto.getEmployeeDOB());
+        employee.setEmployeeGender(employeeDto.getEmployeeGender());
+
+        try{
+            if (employeeDto.getEmployeeImage() != null && !employeeDto.getEmployeeImage().isEmpty()) {
+                employee.setEmployeeImage(employeeDto.getEmployeeImage().getBytes());
+            }
+            else if (employeeDto.getEmployeeImage() == null || employeeDto.getEmployeeImage().isEmpty()){
+                employee.setEmployeeImage(null);
+            }
+        }
+        catch(IOException e){
+            throw new IllegalArgumentException("Failed to process image file!");
+        }
+
+        employee.setEmployeeEmail(employeeDto.getEmployeeEmail());
+        employee.setEmployeePhoneNumber(employeeDto.getEmployeePhoneNumber());
+
+        Address address = new Address();
+
+        address.setAddressLine1(employeeDto.getAddressLine1());
+        address.setAddressLine2(employeeDto.getAddressLine2());
+        address.setCity(employeeDto.getCity());
+        address.setZipCode(employeeDto.getZipCode());
+
+        employee.setEmployeeAddress(address);
+
+        employee.setRole(employeeDto.getRole());
+
+        Employee updatedEmployee = employeeRepo.save(employee);
+
+        String changes = EntityDiffUtil.describeChanges(existingEmployee, updatedEmployee);
+
+        activityLogService.logActivity(
+            "Brand", 
+            updatedEmployee.getEmployeeId(),
+            updatedEmployee.getEmployeeFirstName(), 
+            Action.UPDATE, 
+            changes.isBlank() ? "No changes detected" : changes);
+
+        return updatedEmployee;
     }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -74,6 +75,14 @@ public class EmployeeController {
         EmployeeViewDto employeeViewDto = employeeService.viewEmployeeById(employeeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(employeeViewDto);
+    }
+
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<String> updateBrand(@PathVariable Long employeeId, @ModelAttribute EmployeeDto employeeDto){
+        
+        employeeService.updateEmployee(employeeId, employeeDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Employee successfully updated!");
     }
 
 }
