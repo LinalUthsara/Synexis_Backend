@@ -45,4 +45,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + employeeNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = CustomerNotFoundException.class)
+    public ResponseEntity<String> CustomerNotFoundExceptionHandler (CustomerNotFoundException customerNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + customerNotFoundException.getMessage());
+    }
+
 }

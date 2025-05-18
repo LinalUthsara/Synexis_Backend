@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.BaseUnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDto;
 import com.morphgen.synexis.dto.UnitSideDropViewDto;
@@ -66,11 +67,11 @@ public class UnitController {
     }
 
     @GetMapping("/baseUnitDropDown")
-    public ResponseEntity<List<UnitDropDownDto>> baseUnitDropDown() {
+    public ResponseEntity<List<BaseUnitDropDownDto>> baseUnitDropDown() {
         
-        List<UnitDropDownDto> unitDropDownDtoList = unitService.baseUnitDropDown();
+        List<BaseUnitDropDownDto> baseUnitDropDownDtoList = unitService.baseUnitDropDown();
 
-        return ResponseEntity.status(HttpStatus.OK).body(unitDropDownDtoList);
+        return ResponseEntity.status(HttpStatus.OK).body(baseUnitDropDownDtoList);
     }
 
     @GetMapping("/otherUnitDropDown/{baseUnitId}")

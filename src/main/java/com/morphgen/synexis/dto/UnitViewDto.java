@@ -20,6 +20,12 @@ public class UnitViewDto {
 
     private Status unitStatus;
 
+    private Long baseUnitId;
+
+    private String baseUnitName;
+
+    private Double unitConversionFactor;
+
     private List<AssociatedMaterialDto> associatedMaterialList;
 
 }

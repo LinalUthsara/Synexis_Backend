@@ -14,11 +14,13 @@ public class CategoryViewDto {
 
     private String categoryName;
 
-    private String categotyDescription;
+    private String categoryDescription;
 
     private String parentCategoryName;
+
+    private Long parentCategoryId;
     
-    private Status categotyStatus;
+    private Status categoryStatus;
 
     private List<MaterialTableViewDto> materialTableViewDtoList;
 

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.morphgen.synexis.entity.Material;
+import com.morphgen.synexis.entity.Unit;
 
 @Repository
 
@@ -29,5 +30,8 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     @Query("SELECT m FROM Material m " +
        "WHERE m.brand.brandId = :brandId")
     List<Material> findMaterialsByBrandId(@Param("brandId") Long brandId);
+
+    @Query("SELECT COUNT(m) FROM Material m WHERE m.baseUnit = :unit OR m.otherUnit = :unit")
+    Long countByUnitUsage(Unit unit);
 
 }
