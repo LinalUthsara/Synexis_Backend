@@ -277,8 +277,8 @@ public class UnitServiceImpl implements UnitService {
 
             UnitDropDownDto unitDropDownDto = new UnitDropDownDto();
 
-            unitDropDownDto.setUnitId(unit.getUnitId());
-            unitDropDownDto.setUnitName(unit.getUnitName());
+            unitDropDownDto.setOtherUnitId(unit.getUnitId());
+            unitDropDownDto.setOtherUnitName(unit.getUnitName());
 
             return unitDropDownDto;
         }).collect(Collectors.toList());

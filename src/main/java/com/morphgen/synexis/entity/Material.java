@@ -1,12 +1,14 @@
 package com.morphgen.synexis.entity;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morphgen.synexis.enums.InventoryType;
 import com.morphgen.synexis.enums.MaterialType;
 import com.morphgen.synexis.enums.Status;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.Data;
 
@@ -93,5 +96,9 @@ public class Material {
     @ManyToOne
     @JoinColumn(name = "otherUnitId")
     private Unit otherUnit;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "material", cascade = CascadeType.ALL)
+    private List<ItemMaterial> itemMaterials;
 
 }

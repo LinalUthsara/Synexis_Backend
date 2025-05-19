@@ -42,13 +42,23 @@ public class MaterialViewDto {
 
     private String brandName;
 
+    private Long brandId;
+
     private String categoryName;
+
+    private Long categoryId;
 
     private String subCategoryName;
 
+    private Long subCategoryId;
+
     private String baseUnitName;
 
+    private Long baseUnitId;
+
     private String otherUnitName;
+
+    private Long otherUnitId;
 
     private Status materialStatus;
 

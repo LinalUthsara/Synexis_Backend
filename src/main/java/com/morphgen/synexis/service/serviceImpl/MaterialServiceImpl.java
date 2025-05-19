@@ -212,14 +212,19 @@ public class MaterialServiceImpl implements MaterialService {
         materialViewDto.setMaterialInventoryType(material.getMaterialInventoryType());
         materialViewDto.setMaterialType(material.getMaterialType());
         materialViewDto.setBrandName(material.getBrand().getBrandName());
+        materialViewDto.setBrandId(material.getBrand().getBrandId());
         materialViewDto.setCategoryName(material.getCategory().getCategoryName());
+        materialViewDto.setCategoryId(material.getCategory().getCategoryId());
         materialViewDto.setSubCategoryName(material.getSubCategory().getCategoryName());
+        materialViewDto.setSubCategoryId(material.getSubCategory().getCategoryId());
         materialViewDto.setMaterialPurchasePrice(material.getMaterialPurchasePrice());
         materialViewDto.setMaterialMarketPrice(material.getMaterialMarketPrice());
         materialViewDto.setAlertQuantity(material.getAlertQuantity());
         materialViewDto.setQuantityInHand(material.getQuantityInHand());
         materialViewDto.setBaseUnitName(material.getBaseUnit().getUnitName());
+        materialViewDto.setBaseUnitId(material.getBaseUnit().getUnitId());
         materialViewDto.setOtherUnitName(material.getOtherUnit().getUnitName());
+        materialViewDto.setOtherUnitId(material.getOtherUnit().getUnitId());
         materialViewDto.setMaterialStatus(material.getMaterialStatus());
         materialViewDto.setMaterialForUse(material.getMaterialForUse());
 
