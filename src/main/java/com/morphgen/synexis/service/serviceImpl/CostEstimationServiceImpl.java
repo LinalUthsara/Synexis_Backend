@@ -33,6 +33,7 @@ public class CostEstimationServiceImpl implements CostEstimationService {
         
         CostEstimation estimation = new CostEstimation();
         estimation.setQuotationNumber(costEstimationDto.getQuotationNumber());
+        estimation.setLabourRate(costEstimationDto.getLabourRate());
 
         List<Item> items = new ArrayList<>();
 
@@ -40,6 +41,14 @@ public class CostEstimationServiceImpl implements CostEstimationService {
             Item item = new Item();
             item.setItemName(itemDto.getItemName());
             item.setItemQuantity(itemDto.getItemQuantity());
+            item.setSwitchGearComponentMarkup(itemDto.getSwitchGearComponentMarkup());
+            item.setControlAccessoryMarkup(itemDto.getControlAccessoryMarkup());
+            item.setBusBarMarkup(itemDto.getBusBarMarkup());
+            item.setWiringMarkup(itemDto.getWiringMarkup());
+            item.setOtherAccessoryMarkup(itemDto.getOtherAccessoryMarkup());
+            item.setElectricalLabourMarkup(itemDto.getElectricalLabourMarkup());
+            item.setTransportMarkup(itemDto.getTransportMarkup());
+            item.setEnclosureMarkup(itemDto.getEnclosureMarkup());
             item.setCostEstimation(estimation);
 
             List<ItemMaterial> itemMaterials = new ArrayList<>();

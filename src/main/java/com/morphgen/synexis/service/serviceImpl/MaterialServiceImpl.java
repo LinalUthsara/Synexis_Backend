@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.morphgen.synexis.dto.MaterialDropDownDto;
 import com.morphgen.synexis.dto.MaterialDto;
 import com.morphgen.synexis.dto.MaterialSideDropViewDto;
 import com.morphgen.synexis.dto.MaterialTableViewDto;
@@ -398,6 +399,25 @@ public class MaterialServiceImpl implements MaterialService {
             material.getMaterialName(),
             Action.DELETE, 
             "Deleted Material: " + material.getMaterialName());
+    }
+
+    @Override
+    public List<MaterialDropDownDto> viewMaterialDropDown(String searchMaterial) {
+        
+        List<Material> materials = materialRepo.searchByWordPrefix(searchMaterial.trim());
+
+        List<MaterialDropDownDto> materialDropDownDtoList = materials.stream().map(material ->{
+            
+            MaterialDropDownDto materialDropDownDto = new MaterialDropDownDto();
+
+            materialDropDownDto.setMaterialId(material.getMaterialId());
+            materialDropDownDto.setMaterialName(material.getMaterialName());
+            materialDropDownDto.setMaterialDescription(material.getMaterialDescription());
+
+            return materialDropDownDto;
+        }).collect(Collectors.toList());
+
+        return materialDropDownDtoList;
     }
 
 }

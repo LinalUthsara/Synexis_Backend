@@ -1,5 +1,6 @@
 package com.morphgen.synexis.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +26,17 @@ public class Item {
 
     private String itemName;
 
-    private Long itemQuantity;
+    private BigDecimal itemQuantity;
+
+    private BigDecimal switchGearComponentMarkup;
+    private BigDecimal controlAccessoryMarkup;
+    private BigDecimal busBarMarkup;
+    private BigDecimal wiringMarkup;
+    private BigDecimal otherAccessoryMarkup;
+    private BigDecimal electricalLabourMarkup;
+    private BigDecimal transportMarkup;
+    private BigDecimal enclosureMarkup;
+
 
     @JsonIgnore
     @ManyToOne

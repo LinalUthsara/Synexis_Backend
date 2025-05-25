@@ -19,6 +19,10 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     Optional<Material> findByMaterialSKU(String materialSKU);
     List<Material> findAllByOrderByMaterialIdDesc();
 
+    @Query("SELECT m FROM Material m WHERE LOWER(m.materialName) LIKE LOWER(CONCAT(:searchMaterial, '%')) " +
+       "OR LOWER(m.materialName) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))")
+    List<Material> searchByWordPrefix(@Param("searchMaterial") String searchMaterial);
+
     @Query("SELECT m FROM Material m " +
        "WHERE m.baseUnit.unitId = :unitId OR m.otherUnit.unitId = :unitId")
     List<Material> findMaterialsByUnitId(@Param("unitId") Long unitId);

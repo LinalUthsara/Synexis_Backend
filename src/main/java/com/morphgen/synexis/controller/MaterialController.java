@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.MaterialDropDownDto;
 import com.morphgen.synexis.dto.MaterialDto;
 import com.morphgen.synexis.dto.MaterialSideDropViewDto;
 import com.morphgen.synexis.dto.MaterialTableViewDto;
@@ -100,6 +102,14 @@ public class MaterialController {
         materialService.deleteMaterial(materialId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Material successfully deleted!");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MaterialDropDownDto>> viewMaterialDropDown(@RequestParam String searchMaterial){
+        
+        List<MaterialDropDownDto> materialDropDownDtoList = materialService.viewMaterialDropDown(searchMaterial);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(materialDropDownDtoList);
     }
 
 }
