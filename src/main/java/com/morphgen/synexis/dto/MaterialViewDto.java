@@ -20,6 +20,8 @@ public class MaterialViewDto {
 
     private String materialPartNumber;
 
+    private String materialMake;
+
     private String materialSKU;
 
     private String materialBarcode;

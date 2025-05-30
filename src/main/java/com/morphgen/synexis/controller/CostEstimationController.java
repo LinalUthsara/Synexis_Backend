@@ -6,16 +6,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CostEstimationDto;
 import com.morphgen.synexis.dto.CostEstimationTableViewDto;
 import com.morphgen.synexis.dto.CostEstimationViewDto;
+import com.morphgen.synexis.enums.EstimationStatus;
 import com.morphgen.synexis.service.CostEstimationService;
 
 @RestController
@@ -64,6 +67,22 @@ public class CostEstimationController {
         costEstimationService.updateEstimation(estimationId, costEstimationDto);
 
         return ResponseEntity.status(HttpStatus.OK).body("Estimation successfully updated!");
+    }
+
+    @GetMapping("approval/{inquiryId}")
+    public ResponseEntity<CostEstimationTableViewDto> viewEstimationApprovalTable(@PathVariable Long inquiryId) {
+        
+        CostEstimationTableViewDto costEstimationTableViewDto = costEstimationService.viewEstimationApprovalTable(inquiryId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(costEstimationTableViewDto);
+    }
+
+    @PatchMapping("approval/{estimationId}")
+    public ResponseEntity<String> handleBloodCamp(@PathVariable Long estimationId, @RequestParam EstimationStatus estimationStatus){
+
+        costEstimationService.handleEstimation(estimationId, estimationStatus);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Cost Estimation successfully " + estimationStatus + " !");
     }
 
 }

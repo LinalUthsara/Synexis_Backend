@@ -26,8 +26,11 @@ import com.morphgen.synexis.entity.Item;
 import com.morphgen.synexis.entity.ItemMaterial;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.EstimationStatus;
 import com.morphgen.synexis.exception.CostEstimationNotFoundException;
+import com.morphgen.synexis.exception.IllegalStatusTransitionException;
 import com.morphgen.synexis.exception.InquiryNotFoundException;
+import com.morphgen.synexis.exception.InvalidStatusException;
 import com.morphgen.synexis.exception.MaterialNotFoundException;
 import com.morphgen.synexis.repository.CostEstimationRepo;
 import com.morphgen.synexis.repository.InquiryRepo;
@@ -386,6 +389,92 @@ public class CostEstimationServiceImpl implements CostEstimationService {
         costEstimationViewDto.setItems(itemViewDtoList);
 
         return costEstimationViewDto;
+    }
+
+    @Override
+    public CostEstimationTableViewDto viewEstimationApprovalTable(Long inquiryId) {
+        
+        Inquiry inquiry = inquiryRepo.findById(inquiryId)
+        .orElseThrow(() -> new InquiryNotFoundException("Inquiry ID: " + inquiryId + " is not found!"));
+
+        EstimationStatus estimationStatus = EstimationStatus.DRAFT;
+        
+        List<CostEstimation> costEstimations = costEstimationRepo.findByInquiry_InquiryIdAndEstimationStatusNotOrderByEstimationIdDesc(inquiryId, estimationStatus);
+
+        CostEstimationTableViewDto costEstimationTableViewDto = new CostEstimationTableViewDto();
+
+        costEstimationTableViewDto.setInquiryId(inquiryId);
+        costEstimationTableViewDto.setQuotationNumber(inquiry.getQuotationNumber());
+
+        List<CostEstimationTableDto> costEstimationTableDtoList = costEstimations.stream().map(estimation ->{
+
+            CostEstimationTableDto costEstimationTableDto = new CostEstimationTableDto();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy");
+
+            costEstimationTableDto.setEstimationId(estimation.getEstimationId());
+            costEstimationTableDto.setQuotationVersion(estimation.getQuotationVersion());
+            costEstimationTableDto.setEstimationStatus(estimation.getEstimationStatus());
+            costEstimationTableDto.setLastModifiedDate(estimation.getUpdatedAt().format(formatter));
+
+            return costEstimationTableDto;
+        }).collect(Collectors.toList());
+
+        costEstimationTableViewDto.setEstimations(costEstimationTableDtoList);
+        
+        return costEstimationTableViewDto;
+    }
+
+    @Override
+    public CostEstimation handleEstimation(Long estimationId, EstimationStatus estimationStatus) {
+        
+        CostEstimation estimation = costEstimationRepo.findById(estimationId)
+        .orElseThrow(() -> new CostEstimationNotFoundException("Cost Estimation ID: " + estimationId + " is not found!"));
+
+        EstimationStatus existingStatus = estimation.getEstimationStatus();
+
+        boolean isValidTransition = false;
+
+        switch (existingStatus) {
+            case SUBMITTED:
+                isValidTransition = (estimationStatus == EstimationStatus.ACCEPTED || estimationStatus == EstimationStatus.REJECTED);
+                break;
+            case ACCEPTED:
+                isValidTransition = (estimationStatus == EstimationStatus.REJECTED);
+                break;
+            case REJECTED:
+                isValidTransition = (estimationStatus == EstimationStatus.ACCEPTED);
+                break;
+            default:
+                throw new InvalidStatusException("Unknown existing status: " + existingStatus);
+        }
+
+        if (!isValidTransition) {
+            throw new IllegalStatusTransitionException("Transition from " + existingStatus + " to " + estimationStatus + " is not valid!");
+        }
+
+        if (estimationStatus == EstimationStatus.ACCEPTED) {
+        Long inquiryId = estimation.getInquiry().getInquiryId();
+        boolean alreadyAcceptedExists = costEstimationRepo.existsByInquiry_InquiryIdAndEstimationStatus(inquiryId, EstimationStatus.ACCEPTED);
+
+        if (alreadyAcceptedExists && existingStatus != EstimationStatus.ACCEPTED) {
+            throw new IllegalStatusTransitionException(
+                "Another estimation under " + estimation.getInquiry().getQuotationNumber() + " is already ACCEPTED.");
+        }
+    }
+
+        estimation.setEstimationStatus(estimationStatus);
+
+        CostEstimation updatedEstimation = costEstimationRepo.save(estimation);
+
+        activityLogService.logActivity(
+        "CostEstimation", 
+        updatedEstimation.getEstimationId(),
+        updatedEstimation.getQuotationVersion(),
+        Action.UPDATE, 
+        "Updated Estimation: " + updatedEstimation.getQuotationVersion());
+
+        return updatedEstimation;
     }
 
 }
