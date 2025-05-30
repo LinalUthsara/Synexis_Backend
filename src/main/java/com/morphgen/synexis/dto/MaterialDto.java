@@ -19,6 +19,8 @@ public class MaterialDto {
 
     private String materialPartNumber;
 
+    private String materialMake;
+
     private String materialSKU;
 
     private MultipartFile materialImage;

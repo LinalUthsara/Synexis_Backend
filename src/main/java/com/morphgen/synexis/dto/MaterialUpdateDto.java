@@ -26,6 +26,8 @@ public class MaterialUpdateDto {
 
     private String materialPartNumber;
 
+    private String materialMake;
+
     private String materialSKU;
 
     @Lob

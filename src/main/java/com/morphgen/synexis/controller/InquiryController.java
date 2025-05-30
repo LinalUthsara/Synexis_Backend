@@ -67,7 +67,7 @@ public class InquiryController {
     }
 
     @PutMapping("/{inquiryId}")
-    public ResponseEntity<String> updateBrand(@PathVariable Long inquiryId, @RequestBody InquiryDto inquiryDto){
+    public ResponseEntity<String> updateInquiry(@PathVariable Long inquiryId, @RequestBody InquiryDto inquiryDto){
         
         inquiryService.updateInquiry(inquiryId, inquiryDto);
 

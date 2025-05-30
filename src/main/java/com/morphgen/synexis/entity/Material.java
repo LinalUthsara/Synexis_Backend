@@ -37,6 +37,8 @@ public class Material {
 
     private String materialPartNumber;
 
+    private String materialMake;
+
     private String materialSKU;
 
     private String materialBarcode;

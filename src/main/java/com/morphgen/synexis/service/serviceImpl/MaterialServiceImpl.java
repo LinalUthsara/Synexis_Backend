@@ -75,6 +75,7 @@ public class MaterialServiceImpl implements MaterialService {
         material.setMaterialName(materialDto.getMaterialName());
         material.setMaterialDescription(materialDto.getMaterialDescription());
         material.setMaterialPartNumber(materialDto.getMaterialPartNumber());
+        material.setMaterialMake(materialDto.getMaterialMake());
         material.setMaterialSKU(materialDto.getMaterialSKU());
 
         try{
@@ -210,6 +211,7 @@ public class MaterialServiceImpl implements MaterialService {
         materialViewDto.setMaterialBarcode(material.getMaterialBarcode());
         materialViewDto.setMaterialDescription(material.getMaterialDescription());
         materialViewDto.setMaterialPartNumber(material.getMaterialPartNumber());
+        materialViewDto.setMaterialMake(material.getMaterialMake());
         materialViewDto.setMaterialInventoryType(material.getMaterialInventoryType());
         materialViewDto.setMaterialType(material.getMaterialType());
         materialViewDto.setBrandName(material.getBrand().getBrandName());
@@ -274,6 +276,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialName(material.getMaterialName())
         .materialDescription(material.getMaterialDescription())
         .materialPartNumber(material.getMaterialPartNumber())
+        .materialMake(material.getMaterialMake())
         .materialSKU(material.getMaterialSKU())
         .materialImage(material.getMaterialImage() != null ? material.getMaterialImage().clone() : null)
         .materialMarketPrice(material.getMaterialMarketPrice())
@@ -293,6 +296,7 @@ public class MaterialServiceImpl implements MaterialService {
         material.setMaterialName(materialDto.getMaterialName());
         material.setMaterialDescription(materialDto.getMaterialDescription());
         material.setMaterialPartNumber(materialDto.getMaterialPartNumber());
+        material.setMaterialMake(materialDto.getMaterialMake());
         material.setMaterialSKU(materialDto.getMaterialSKU());
 
         try{
@@ -356,6 +360,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialName(updatedMaterial.getMaterialName())
         .materialDescription(updatedMaterial.getMaterialDescription())
         .materialPartNumber(updatedMaterial.getMaterialPartNumber())
+        .materialMake(updatedMaterial.getMaterialMake())
         .materialSKU(updatedMaterial.getMaterialSKU())
         .materialImage(updatedMaterial.getMaterialImage() != null ? material.getMaterialImage().clone() : null)
         .materialMarketPrice(updatedMaterial.getMaterialMarketPrice())
@@ -413,6 +418,11 @@ public class MaterialServiceImpl implements MaterialService {
             materialDropDownDto.setMaterialId(material.getMaterialId());
             materialDropDownDto.setMaterialName(material.getMaterialName());
             materialDropDownDto.setMaterialDescription(material.getMaterialDescription());
+            materialDropDownDto.setMaterialMarketPrice(material.getMaterialMarketPrice());
+            materialDropDownDto.setMaterialPartNumber(material.getMaterialPartNumber());
+            materialDropDownDto.setMaterialType(material.getMaterialType());
+            materialDropDownDto.setMaterialMake(material.getMaterialMake());
+            materialDropDownDto.setMaterialCountry(material.getBrand().getBrandCountry());
 
             return materialDropDownDto;
         }).collect(Collectors.toList());
