@@ -15,11 +15,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data integrity error occured: " + dataIntegrityViolationException.getMessage());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid argument: " + ex.getMessage());
-    }
-
     @ExceptionHandler(value = InvalidInputException.class)
     public ResponseEntity<String> InvalidInputExceptionHandler (InvalidInputException invalidInputException){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid input: " + invalidInputException.getMessage());
@@ -68,6 +63,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = CostEstimationNotFoundException.class)
     public ResponseEntity<String> CostEstimationNotFoundExceptionHandler (CostEstimationNotFoundException costEstimationNotFoundException){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + costEstimationNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = InvalidStatusException.class)
+    public ResponseEntity<String> InvalidStatusExceptionHandler (InvalidStatusException invalidStatusException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid status: " + invalidStatusException.getMessage());
+    }
+
+    @ExceptionHandler(value = IllegalStatusTransitionException.class)
+    public ResponseEntity<String> IllegalStatusTransitionExceptionHandler (IllegalStatusTransitionException illegalStatusTransitionException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid status transition: " + illegalStatusTransitionException.getMessage());
     }
 
 }
