@@ -15,6 +15,7 @@ import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryUpdateDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
 import com.morphgen.synexis.dto.MaterialTableViewDto;
+import com.morphgen.synexis.dto.ParentCategoryDropDownDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
@@ -111,10 +112,11 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryViewDto.setCategoryId(categoryId);
         categoryViewDto.setCategoryName(category.getCategoryName());
-        categoryViewDto.setCategotyDescription(category.getCategoryDescription());
-        categoryViewDto.setCategotyStatus(category.getCategoryStatus());
+        categoryViewDto.setCategoryDescription(category.getCategoryDescription());
+        categoryViewDto.setCategoryStatus(category.getCategoryStatus());
 
         if (category.getParentCategory() != null) {
+            categoryViewDto.setParentCategoryId(category.getParentCategory().getCategoryId());
             categoryViewDto.setParentCategoryName(category.getParentCategory().getCategoryName());
         }
 
@@ -276,6 +278,24 @@ public class CategoryServiceImpl implements CategoryService {
         }).collect(Collectors.toList());
 
         return categoryDropDownDtoList;
+    }
+
+    @Override
+    public List<ParentCategoryDropDownDto> parentCategoryDropDown() {
+        
+        List<Category> categories = categoryRepo.findByParentCategoryIsNullOrderByCategoryNameAsc();
+
+        List<ParentCategoryDropDownDto> parentCategoryDropDownDtoList = categories.stream().map(category ->{
+
+            ParentCategoryDropDownDto parentCategoryDropDownDto = new ParentCategoryDropDownDto();
+
+            parentCategoryDropDownDto.setParentCategoryId(category.getCategoryId());
+            parentCategoryDropDownDto.setParentCategoryName(category.getCategoryName());
+
+            return parentCategoryDropDownDto;
+        }).collect(Collectors.toList());
+
+        return parentCategoryDropDownDtoList;
     }
 
 }

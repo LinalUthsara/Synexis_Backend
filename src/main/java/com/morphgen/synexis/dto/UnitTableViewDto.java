@@ -17,4 +17,6 @@ public class UnitTableViewDto {
     private Boolean unitAllowDecimal;
 
     private Status unitStatus;
+
+    private Long materialCount;
 }

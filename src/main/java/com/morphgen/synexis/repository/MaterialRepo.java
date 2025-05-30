@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.morphgen.synexis.entity.Material;
+import com.morphgen.synexis.entity.Unit;
 
 @Repository
 
@@ -17,6 +18,10 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     Optional<Material> findByMaterialName(String materialName);
     Optional<Material> findByMaterialSKU(String materialSKU);
     List<Material> findAllByOrderByMaterialIdDesc();
+
+    @Query("SELECT m FROM Material m WHERE LOWER(m.materialName) LIKE LOWER(CONCAT(:searchMaterial, '%')) " +
+       "OR LOWER(m.materialName) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))")
+    List<Material> searchByWordPrefix(@Param("searchMaterial") String searchMaterial);
 
     @Query("SELECT m FROM Material m " +
        "WHERE m.baseUnit.unitId = :unitId OR m.otherUnit.unitId = :unitId")
@@ -29,5 +34,8 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     @Query("SELECT m FROM Material m " +
        "WHERE m.brand.brandId = :brandId")
     List<Material> findMaterialsByBrandId(@Param("brandId") Long brandId);
+
+    @Query("SELECT COUNT(m) FROM Material m WHERE m.baseUnit = :unit OR m.otherUnit = :unit")
+    Long countByUnitUsage(Unit unit);
 
 }

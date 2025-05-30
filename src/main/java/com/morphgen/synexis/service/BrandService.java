@@ -23,7 +23,7 @@ public interface BrandService {
     List<BrandSideDropViewDto> viewBrandSideDrop();
     BrandViewDto viewBrandById(Long brandId);
 
-    List<BrandDropDownDto> brandDropDown();
+    List<BrandDropDownDto> brandDropDown(String searchBrand);
 
     Brand updateBrand(Long brandId, BrandDto brandDto);
     

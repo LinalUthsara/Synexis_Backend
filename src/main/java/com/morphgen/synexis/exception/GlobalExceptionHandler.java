@@ -20,6 +20,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid argument: " + ex.getMessage());
     }
 
+    @ExceptionHandler(value = InvalidInputException.class)
+    public ResponseEntity<String> InvalidInputExceptionHandler (InvalidInputException invalidInputException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid input: " + invalidInputException.getMessage());
+    }
+
+    @ExceptionHandler(value = ImageProcessingException.class)
+    public ResponseEntity<String> ImageProcessingExceptionHandler (ImageProcessingException imageProcessingException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image Processing Failed: " + imageProcessingException.getMessage());
+    }
+
     @ExceptionHandler(value = BrandNotFoundException.class)
     public ResponseEntity<String> BrandNotFoundExceptionHandler (BrandNotFoundException brandNotFoundException){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + brandNotFoundException.getMessage());
@@ -43,6 +53,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = EmployeeNotFoundException.class)
     public ResponseEntity<String> EmployeeNotFoundExceptionHandler (EmployeeNotFoundException employeeNotFoundException){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + employeeNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = CustomerNotFoundException.class)
+    public ResponseEntity<String> CustomerNotFoundExceptionHandler (CustomerNotFoundException customerNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + customerNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = InquiryNotFoundException.class)
+    public ResponseEntity<String> InquiryNotFoundExceptionHandler (InquiryNotFoundException inquiryNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + inquiryNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = CostEstimationNotFoundException.class)
+    public ResponseEntity<String> CostEstimationNotFoundExceptionHandler (CostEstimationNotFoundException costEstimationNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + costEstimationNotFoundException.getMessage());
     }
 
 }

@@ -197,7 +197,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 throw new DataIntegrityViolationException("An Employee with the email " + employeeDto.getEmployeeEmail() + " already exists!");
             }
         }
-        if (!employee.getEmployeeEmail().equalsIgnoreCase(employeeDto.getEmployeeEmail())) {
+        if (!employee.getEmployeeNIC().equalsIgnoreCase(employeeDto.getEmployeeNIC())) {
             Optional<Employee> existingEmployeeNIC = employeeRepo.findByEmployeeNIC(employeeDto.getEmployeeNIC());
             if (existingEmployeeNIC.isPresent()){
                 throw new DataIntegrityViolationException("An Employee with the NIC " + employeeDto.getEmployeeNIC() + " already exists!");

@@ -10,18 +10,24 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.morphgen.synexis.dto.BrandDropDownDto;
 import com.morphgen.synexis.dto.BrandDto;
 import com.morphgen.synexis.dto.BrandSideDropViewDto;
 import com.morphgen.synexis.dto.BrandTableViewDto;
+import com.morphgen.synexis.dto.BrandUpdateDto;
 import com.morphgen.synexis.dto.BrandViewDto;
 import com.morphgen.synexis.dto.MaterialTableViewDto;
 import com.morphgen.synexis.entity.Brand;
+import com.morphgen.synexis.entity.BrandImage;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
+import com.morphgen.synexis.exception.ImageProcessingException;
+import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.BrandRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -43,11 +49,36 @@ public class BrandServiceImpl implements BrandService {
     private MaterialRepo materialRepo;
 
     @Override
+    @Transactional
     public Brand createBrand(BrandDto brandDto) {
         
+        if(brandDto.getBrandName() == null || brandDto.getBrandName().isEmpty()){
+            throw new InvalidInputException("Brand name cannot be empty!");
+        }
+        else if(brandDto.getBrandCountry() == null || brandDto.getBrandCountry().isEmpty()){
+            throw new InvalidInputException("Brand country cannot be null empty!");
+        }
+
         Optional<Brand> existingBrand = brandRepo.findByBrandName(brandDto.getBrandName());
         if(existingBrand.isPresent()){
-            throw new DataIntegrityViolationException("A Brand with the name " + brandDto.getBrandName() + " already exists!");
+
+            Brand activeBrand = existingBrand.get();
+
+            if (activeBrand.getBrandStatus() == Status.ACTIVE){
+
+                throw new DataIntegrityViolationException("A Brand with the name " + brandDto.getBrandName() + " already exists!");
+            }
+            else {
+
+                throw new DataIntegrityViolationException("A Brand with the name " + brandDto.getBrandName() + " already exists but is currently inactive. Consider reactivating it.");
+            }
+        }
+
+        if (brandDto.getBrandWebsite() != null){
+            Optional<Brand> existingBrandWebsite = brandRepo.findByBrandWebsite(brandDto.getBrandWebsite());
+            if(existingBrandWebsite.isPresent()){
+                throw new DataIntegrityViolationException("A Brand with the website " + brandDto.getBrandWebsite() + " already exists!");
+            }
         }
 
         Brand brand = new Brand();
@@ -56,14 +87,22 @@ public class BrandServiceImpl implements BrandService {
         brand.setBrandDescription(brandDto.getBrandDescription());
         brand.setBrandCountry(brandDto.getBrandCountry());
         brand.setBrandWebsite(brandDto.getBrandWebsite());
-
+        
         try{
             if(brandDto.getBrandImage() !=null && !brandDto.getBrandImage().isEmpty()){
-                brand.setBrandImage(brandDto.getBrandImage().getBytes());
+                BrandImage brandImage = new BrandImage();
+                
+                brandImage.setBrandImageName(brandDto.getBrandImage().getOriginalFilename());
+                brandImage.setBrandImageType(brandDto.getBrandImage().getContentType());
+                brandImage.setBrandImageSize(brandDto.getBrandImage().getSize());
+                brandImage.setBrandImageData(brandDto.getBrandImage().getBytes());
+                brandImage.setBrand(brand);
+
+                brand.setBrandImage(brandImage);
             }
         }
         catch(IOException e) {
-            throw new IllegalArgumentException("Failed to process image file!");
+            throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
         Brand newBrand = brandRepo.save(brand);
@@ -81,10 +120,10 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public ResponseEntity<byte[]> viewBrandImage(Long brandId) {
         return brandRepo.findById(brandId)
-            .filter(brand -> brand.getBrandImage() != null)
+            .filter(brand -> brand.getBrandImage().getBrandImageData() != null)
             .map(brand -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-                .body(brand.getBrandImage()))
+                .body(brand.getBrandImage().getBrandImageData()))
             .orElse(ResponseEntity.notFound().build());
     }
 
@@ -188,6 +227,13 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public Brand updateBrand(Long brandId, BrandDto brandDto) {
         
+        if(brandDto.getBrandName() == null || brandDto.getBrandName().isEmpty()){
+            throw new InvalidInputException("Brand name cannot be empty!");
+        }
+        else if(brandDto.getBrandCountry() == null || brandDto.getBrandCountry().isEmpty()){
+            throw new InvalidInputException("Brand country cannot be null empty!");
+        }
+
         Brand brand = brandRepo.findById(brandId)
         .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
 
@@ -198,13 +244,20 @@ public class BrandServiceImpl implements BrandService {
             }
         }
 
-        Brand existingBrand = Brand.builder()
+        if (StringUtils.hasText(brandDto.getBrandWebsite()) && !brandDto.getBrandWebsite().equalsIgnoreCase(brand.getBrandWebsite())){
+            Optional<Brand> existingBrandWebsite = brandRepo.findByBrandWebsite(brandDto.getBrandWebsite());
+            if(existingBrandWebsite.isPresent()){
+                throw new DataIntegrityViolationException("A Brand with the website " + brandDto.getBrandWebsite() + " already exists!");
+            }
+        }
+
+        BrandUpdateDto existingBrand = BrandUpdateDto.builder()
         .brandId(brand.getBrandId())
         .brandName(brand.getBrandName())
         .brandDescription(brand.getBrandDescription())
         .brandCountry(brand.getBrandCountry())
         .brandWebsite(brand.getBrandWebsite())
-        .brandImage(brand.getBrandImage() != null ? brand.getBrandImage().clone() : null)
+        .brandImage(brand.getBrandImage() != null && brand.getBrandImage().getBrandImageData() != null ? brand.getBrandImage().getBrandImageData().clone() : null)
         .brandStatus(brand.getBrandStatus())
         .build();
 
@@ -215,19 +268,46 @@ public class BrandServiceImpl implements BrandService {
 
         try{
             if(brandDto.getBrandImage() !=null && !brandDto.getBrandImage().isEmpty()){
-                brand.setBrandImage(brandDto.getBrandImage().getBytes());
+                BrandImage brandImage = brand.getBrandImage();
+                if (brandImage == null) {
+                    brandImage = new BrandImage();
+                }
+                
+                brandImage.setBrandImageName(brandDto.getBrandImage().getOriginalFilename());
+                brandImage.setBrandImageType(brandDto.getBrandImage().getContentType());
+                brandImage.setBrandImageSize(brandDto.getBrandImage().getSize());
+                brandImage.setBrandImageData(brandDto.getBrandImage().getBytes());
+                brandImage.setBrand(brand);
+
+                brand.setBrandImage(brandImage);
             }
-            else if(brandDto.getBrandImage() == null || brandDto.getBrandImage().isEmpty()){
+            else if (brand.getBrandImage() != null) {
+                BrandImage brandImage = brand.getBrandImage();
+                brandImage.setBrandImageName(null);
+                brandImage.setBrandImageType(null);
+                brandImage.setBrandImageSize(null);
+                brandImage.setBrandImageData(null);
+                brandImage.setBrand(brand);
                 brand.setBrandImage(null);
             }
         }
         catch(IOException e) {
-            throw new RuntimeException("Failed to process image file", e);
+            throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
         Brand updatedBrand = brandRepo.save(brand);
 
-        String changes = EntityDiffUtil.describeChanges(existingBrand, updatedBrand);
+        BrandUpdateDto newBrand = BrandUpdateDto.builder()
+        .brandId(updatedBrand.getBrandId())
+        .brandName(updatedBrand.getBrandName())
+        .brandDescription(updatedBrand.getBrandDescription())
+        .brandCountry(updatedBrand.getBrandCountry())
+        .brandWebsite(updatedBrand.getBrandWebsite())
+        .brandImage(updatedBrand.getBrandImage() != null && updatedBrand.getBrandImage().getBrandImageData() != null ? updatedBrand.getBrandImage().getBrandImageData().clone() : null)
+        .brandStatus(updatedBrand.getBrandStatus())
+        .build();
+
+        String changes = EntityDiffUtil.describeChanges(existingBrand, newBrand);
 
         activityLogService.logActivity(
             "Brand", 
@@ -259,9 +339,9 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public List<BrandDropDownDto> brandDropDown() {
+    public List<BrandDropDownDto> brandDropDown(String searchBrand) {
         
-        List<Brand> brands = brandRepo.findAllByOrderByBrandNameAsc();
+        List<Brand> brands = brandRepo.searchActiveBrands(searchBrand);
 
         List<BrandDropDownDto> brandDropDownDtoList = brands.stream().map(brand ->{
 

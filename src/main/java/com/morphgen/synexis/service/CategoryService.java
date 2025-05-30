@@ -9,6 +9,7 @@ import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
+import com.morphgen.synexis.dto.ParentCategoryDropDownDto;
 import com.morphgen.synexis.entity.Category;
 
 @Service
@@ -21,6 +22,8 @@ public interface CategoryService {
     List<CategorySideDropViewDto> viewCategorySideDrop();
     CategoryViewDto viewCategoryById(Long categoryId);
 
+
+    List<ParentCategoryDropDownDto> parentCategoryDropDown();
     List<CategoryDropDownDto> categoryDropDown();
     List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId);
 

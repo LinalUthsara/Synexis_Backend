@@ -15,6 +15,7 @@ import com.morphgen.synexis.dto.CategoryDto;
 import com.morphgen.synexis.dto.CategorySideDropViewDto;
 import com.morphgen.synexis.dto.CategoryTableViewDto;
 import com.morphgen.synexis.dto.CategoryViewDto;
+import com.morphgen.synexis.dto.ParentCategoryDropDownDto;
 import com.morphgen.synexis.service.CategoryService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -102,6 +103,14 @@ public class CategoryController {
         categoryService.deleteCategory(categoryId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Category successfully deleted!");
+    }
+
+    @GetMapping("/parentCategoryDropDown")
+    public ResponseEntity<List<ParentCategoryDropDownDto>> parentCategoryDropDown(){
+
+        List<ParentCategoryDropDownDto> pCategoryDropDownDtoList = categoryService.parentCategoryDropDown();
+
+        return ResponseEntity.status(HttpStatus.OK).body(pCategoryDropDownDtoList);
     }
     
 }

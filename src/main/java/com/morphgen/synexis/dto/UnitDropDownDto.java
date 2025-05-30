@@ -6,8 +6,8 @@ import lombok.Data;
 
 public class UnitDropDownDto {
     
-    private Long unitId;
+    private Long otherUnitId;
 
-    private String unitName;
+    private String otherUnitName;
 
 }

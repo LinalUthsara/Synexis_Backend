@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.AssociatedMaterialDto;
+import com.morphgen.synexis.dto.BaseUnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDropDownDto;
 import com.morphgen.synexis.dto.UnitDto;
 import com.morphgen.synexis.dto.UnitSideDropViewDto;
@@ -88,6 +89,8 @@ public class UnitServiceImpl implements UnitService {
 
         List<UnitTableViewDto> unitTableViewDtoList = units.stream().map(unit ->{
 
+            Long materialCount = materialRepo.countByUnitUsage(unit);
+
             UnitTableViewDto unitTableViewDto = new UnitTableViewDto();
 
             unitTableViewDto.setUnitId(unit.getUnitId());
@@ -95,6 +98,7 @@ public class UnitServiceImpl implements UnitService {
             unitTableViewDto.setUnitShortName(unit.getUnitShortName());
             unitTableViewDto.setUnitAllowDecimal(unit.getUnitAllowDecimal());
             unitTableViewDto.setUnitStatus(unit.getUnitStatus());
+            unitTableViewDto.setMaterialCount(materialCount);
 
             return unitTableViewDto;
         }).collect(Collectors.toList());
@@ -113,6 +117,7 @@ public class UnitServiceImpl implements UnitService {
 
             unitSideDropViewDto.setUnitId(unit.getUnitId());
             unitSideDropViewDto.setUnitName(unit.getUnitName());
+            unitSideDropViewDto.setUnitShortName(unit.getUnitShortName());
 
             return unitSideDropViewDto;
         }).collect(Collectors.toList());
@@ -135,6 +140,12 @@ public class UnitServiceImpl implements UnitService {
         unitViewDto.setUnitShortName(unit.getUnitShortName());
         unitViewDto.setUnitAllowDecimal(unit.getUnitAllowDecimal());
         unitViewDto.setUnitStatus(unit.getUnitStatus());
+        
+        if (unit.getBaseUnit() != null){
+            unitViewDto.setBaseUnitId(unit.getBaseUnit().getUnitId());
+            unitViewDto.setBaseUnitName(unit.getBaseUnit().getUnitName());
+            unitViewDto.setUnitConversionFactor(unit.getUnitConversionFactor());
+        }
 
         List<AssociatedMaterialDto> associatedMaterialDtoList = materials.stream().map(material ->{
             
@@ -240,21 +251,21 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<UnitDropDownDto> baseUnitDropDown() {
+    public List<BaseUnitDropDownDto> baseUnitDropDown() {
         
         List<Unit> units = unitRepo.findByBaseUnitIsNullOrderByUnitNameAsc();
 
-        List<UnitDropDownDto> unitDropDownDtoList = units.stream().map(unit ->{
+        List<BaseUnitDropDownDto> BaseUnitDropDownDto = units.stream().map(unit ->{
 
-            UnitDropDownDto unitDropDownDto = new UnitDropDownDto();
+            BaseUnitDropDownDto baseUnitDropDownDto = new BaseUnitDropDownDto();
 
-            unitDropDownDto.setUnitId(unit.getUnitId());
-            unitDropDownDto.setUnitName(unit.getUnitName());
+            baseUnitDropDownDto.setBaseUnitId(unit.getUnitId());
+            baseUnitDropDownDto.setBaseUnitName(unit.getUnitName());
 
-            return unitDropDownDto;
+            return baseUnitDropDownDto;
         }).collect(Collectors.toList());
 
-        return unitDropDownDtoList;
+        return BaseUnitDropDownDto;
     }
 
     @Override
@@ -266,8 +277,8 @@ public class UnitServiceImpl implements UnitService {
 
             UnitDropDownDto unitDropDownDto = new UnitDropDownDto();
 
-            unitDropDownDto.setUnitId(unit.getUnitId());
-            unitDropDownDto.setUnitName(unit.getUnitName());
+            unitDropDownDto.setOtherUnitId(unit.getUnitId());
+            unitDropDownDto.setOtherUnitName(unit.getUnitName());
 
             return unitDropDownDto;
         }).collect(Collectors.toList());
