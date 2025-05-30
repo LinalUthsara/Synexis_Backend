@@ -9,16 +9,18 @@ import lombok.Data;
 
 @Data
 
-public class CostEstimationDto {
+public class CostEstimationViewDto {
+    
+    private String quotationVersion;
     
     private Long inquiryId;
-
-    private EstimationStatus estimationStatus;
-    
-    private List<ItemDto> items;
 
     private BigDecimal labourRate;
 
     private BigDecimal otherCostRate;
+
+    private EstimationStatus estimationStatus;
+    
+    private List<ItemViewDto> items;
     
 }

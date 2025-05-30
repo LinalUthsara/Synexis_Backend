@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 
-public class ItemDto {
+public class ItemViewDto {
     
     private Long itemId;
     
@@ -31,6 +31,6 @@ public class ItemDto {
     
     private BigDecimal enclosureMarkup;
 
-    private List<ItemMaterialDto> itemMaterials;
-
+    private List<ItemMaterialViewDto> itemMaterials;
+    
 }

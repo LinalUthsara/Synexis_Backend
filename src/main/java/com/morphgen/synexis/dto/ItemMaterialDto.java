@@ -8,6 +8,8 @@ import lombok.Data;
 
 public class ItemMaterialDto {
     
+    private Long itemMaterialId;
+    
     private Long materialId;
 
     private BigDecimal materialQuantity;

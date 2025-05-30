@@ -20,22 +20,38 @@ public class EntityDiffUtil {
             try {
                 Object oldValue = field.get(oldObj);
                 Object newValue = field.get(newObj);
-                String fieldName = field.getName();
+                String fieldName = toPascalCase(field.getName());
 
                 if (field.getType().equals(byte[].class)) {
-                    boolean changed = !Arrays.equals((byte[]) oldValue, (byte[]) newValue);
-                    if (changed) {
-                        changes.add("Updated '" + fieldName + "': image updated");
+                    byte[] oldBytes = (byte[]) oldValue;
+                    byte[] newBytes = (byte[]) newValue;
+
+                    boolean oldEmpty = (oldBytes == null || oldBytes.length == 0);
+                    boolean newEmpty = (newBytes == null || newBytes.length == 0);
+
+                    if (oldEmpty && !newEmpty) {
+                        changes.add("Added " + fieldName + ": image added");
+                    } else if (!oldEmpty && newEmpty) {
+                        changes.add("Removed " + fieldName + ": image removed");
+                    } else if (!oldEmpty && !newEmpty && !Arrays.equals(oldBytes, newBytes)) {
+                        changes.add("Updated " + fieldName + ": image updated");
                     }
                     continue;
                 }
 
-                if (oldValue == null && newValue == null) continue;
-                if (oldValue != null && oldValue.equals(newValue)) continue;
-                if (newValue != null && newValue.equals(oldValue)) continue;
+                boolean oldEmpty = isNullOrEmpty(oldValue);
+                boolean newEmpty = isNullOrEmpty(newValue);
 
-                changes.add("Updated '" + fieldName + "' from '" + oldValue + "' to '" + newValue + "'");
-            } catch (IllegalAccessException e) {
+                if (oldEmpty && !newEmpty) {
+                    changes.add("Added " + fieldName + ": " + newValue);
+                } else if (!oldEmpty && newEmpty) {
+                    changes.add("Removed " + fieldName + ": " + oldValue);
+                } else if (!oldEmpty && !newEmpty && !oldValue.equals(newValue)) {
+                    changes.add("Updated " + fieldName + " from " + oldValue + " to " + newValue);
+                }
+
+            } 
+            catch (IllegalAccessException e) {
                 changes.add("Could not access field: " + field.getName());
             }
         }
@@ -43,4 +59,24 @@ public class EntityDiffUtil {
         return String.join(". ", changes).trim();
     }
     
+    private static String toPascalCase(String fieldName) {
+        
+        String[] parts = fieldName.split("_");
+        StringBuilder pascalCase = new StringBuilder();
+        for (String part : parts) {
+            if (part.length() > 0) {
+                pascalCase.append(Character.toUpperCase(part.charAt(0)));
+                if (part.length() > 1) {
+                    pascalCase.append(part.substring(1));
+                }
+            }
+        }
+        return pascalCase.toString();
+    }
+
+    private static boolean isNullOrEmpty(Object obj) {
+        if (obj == null) return true;
+        if (obj instanceof String) return ((String) obj).trim().isEmpty();
+        return false;
+    }
 }

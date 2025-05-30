@@ -54,20 +54,3 @@ public class MaterialUpdateDto {
     private String otherUnitName;
 }
 
-// .materialId
-// .materialName
-// .materialDescription
-// .materialPartNumber
-// .materialSKU
-// .materialImage
-// .materialMarketPrice
-// .materialPurchasePrice
-// .alertQuantity
-// .materialForUse
-// .materialType
-// .materialInventoryType
-// .brandName
-// .categoryName
-// .subCategoryName
-// .baseUnitName
-// .otherUnitName

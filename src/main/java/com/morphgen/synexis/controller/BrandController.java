@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.BrandDropDownDto;
@@ -37,13 +38,6 @@ public class BrandController {
 
     @PostMapping
     public ResponseEntity<String> createBrand(@ModelAttribute BrandDto brandDto) throws IOException {
-        
-        if(brandDto.getBrandName() == null || brandDto.getBrandName().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Brand Name is Required!");
-        }
-        else if(brandDto.getBrandCountry() == null || brandDto.getBrandCountry().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Brand Country is Required!");
-        }
 
         brandService.createBrand(brandDto);
 
@@ -53,6 +47,7 @@ public class BrandController {
 
     @GetMapping("/image/{brandId}")
     public ResponseEntity<byte[]> getBrandImage(@PathVariable Long brandId) {
+        
         return brandService.viewBrandImage(brandId);
     }
 
@@ -73,10 +68,10 @@ public class BrandController {
 
     }
 
-    @GetMapping("/brandDropDown")
-    public ResponseEntity<List<BrandDropDownDto>> brandDropDown(){
+    @GetMapping("/search")
+    public ResponseEntity<List<BrandDropDownDto>> brandDropDown(@RequestParam String searchBrand){
 
-        List<BrandDropDownDto> brandDropDownDtoList = brandService.brandDropDown();
+        List<BrandDropDownDto> brandDropDownDtoList = brandService.brandDropDown(searchBrand);
 
         return ResponseEntity.status(HttpStatus.OK).body(brandDropDownDtoList);
 

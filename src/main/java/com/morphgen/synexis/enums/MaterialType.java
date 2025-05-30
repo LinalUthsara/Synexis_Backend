@@ -7,6 +7,8 @@ public enum MaterialType {
     BUSBAR,
     WIRING,
     OTHER_ACCESSORIES,
+    ELECTRICAL_LABOR,
+    TRANSPORT,
     ENCLOSURE
 
 }
