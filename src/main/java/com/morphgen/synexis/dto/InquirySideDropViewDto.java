@@ -1,5 +1,7 @@
 package com.morphgen.synexis.dto;
 
+import com.morphgen.synexis.enums.InquiryType;
+
 import lombok.Data;
 
 @Data
@@ -11,5 +13,7 @@ public class InquirySideDropViewDto {
     private String projectName;
 
     private String quotationNumber;
+
+    private InquiryType inquiryType;
     
 }
