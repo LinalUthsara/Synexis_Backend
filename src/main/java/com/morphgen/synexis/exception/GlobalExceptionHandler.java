@@ -75,4 +75,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid status transition: " + illegalStatusTransitionException.getMessage());
     }
 
+    @ExceptionHandler(value = JobNotFoundException.class)
+    public ResponseEntity<String> JobNotFoundExceptionHandler (JobNotFoundException jobNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + jobNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = AttachmentProcessingException.class)
+    public ResponseEntity<String> AttachmentProcessingExceptionHandler (AttachmentProcessingException attachmentProcessingException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Attachment Processing Failed: " + attachmentProcessingException.getMessage());
+    }
+
+    @ExceptionHandler(value = AttachmentNotFoundException.class)
+    public ResponseEntity<String> AttachmentNotFoundExceptionHandler (AttachmentNotFoundException attachmentNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + attachmentNotFoundException.getMessage());
+    }
+
 }
