@@ -140,7 +140,10 @@ public class CustomerServiceImpl implements CustomerService {
             CustomerSideDropViewDto customerSideDropViewDto = new CustomerSideDropViewDto();
 
             customerSideDropViewDto.setCustomerId(customer.getCustomerId());
-            customerSideDropViewDto.setCustomerName(customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
+            customerSideDropViewDto.setCustomerPrefix(customer.getCustomerPrefix());
+            customerSideDropViewDto.setCustomerFirstName(customer.getCustomerFirstName());
+            customerSideDropViewDto.setCustomerLastName(customer.getCustomerLastName());
+            customerSideDropViewDto.setCustomerEmail(customer.getCustomerEmail());
 
             return customerSideDropViewDto;
         }).collect(Collectors.toList());

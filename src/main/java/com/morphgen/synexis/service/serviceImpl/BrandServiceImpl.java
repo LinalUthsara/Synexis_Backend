@@ -142,7 +142,7 @@ public class BrandServiceImpl implements BrandService {
             brandTableViewDto.setBrandCountry(brand.getBrandCountry());
             brandTableViewDto.setBrandStatus(brand.getBrandStatus());
 
-            if (brand.getBrandImage() != null) {
+            if (brand.getBrandImage().getBrandImageData() != null) {
                 String imageUrl = ImageUrlUtil.constructImageUrl(brand.getBrandId());
                 brandTableViewDto.setBrandImageUrl(imageUrl);
             }
@@ -165,7 +165,7 @@ public class BrandServiceImpl implements BrandService {
             brandSideDropViewDto.setBrandId(brand.getBrandId());
             brandSideDropViewDto.setBrandName(brand.getBrandName());
 
-            if (brand.getBrandImage() != null) {
+            if (brand.getBrandImage().getBrandImageData() != null) {
                 String imageUrl = ImageUrlUtil.constructImageUrl(brand.getBrandId());
                 brandSideDropViewDto.setBrandImageUrl(imageUrl);
             }
@@ -193,7 +193,7 @@ public class BrandServiceImpl implements BrandService {
         brandViewDto.setBrandWebsite(brand.getBrandWebsite());
         brandViewDto.setBrandStatus(brand.getBrandStatus());
 
-        if (brand.getBrandImage() != null) {
+        if (brand.getBrandImage().getBrandImageData() != null) {
             String imageUrl = ImageUrlUtil.constructImageUrl(brand.getBrandId());
             brandViewDto.setBrandImageUrl(imageUrl);
         }

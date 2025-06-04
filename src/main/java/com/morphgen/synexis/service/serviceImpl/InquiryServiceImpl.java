@@ -157,6 +157,7 @@ public class InquiryServiceImpl implements InquiryService {
             inquirySideDropViewDto.setInquiryId(inquiry.getInquiryId());
             inquirySideDropViewDto.setQuotationNumber(inquiry.getQuotationNumber());
             inquirySideDropViewDto.setProjectName(inquiry.getProjectName());
+            inquirySideDropViewDto.setInquiryType(inquiry.getInquiryType());
 
             return inquirySideDropViewDto;
         }).collect(Collectors.toList());
