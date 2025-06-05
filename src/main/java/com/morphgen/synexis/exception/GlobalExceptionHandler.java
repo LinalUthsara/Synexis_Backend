@@ -90,4 +90,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + attachmentNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = ImageNotFoundException.class)
+    public ResponseEntity<String> ImageNotFoundExceptionHandler (ImageNotFoundException imageNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + imageNotFoundException.getMessage());
+    }
 }

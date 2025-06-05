@@ -26,6 +26,7 @@ import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
+import com.morphgen.synexis.exception.ImageNotFoundException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.BrandRepo;
@@ -124,7 +125,7 @@ public class BrandServiceImpl implements BrandService {
             .map(brand -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                 .body(brand.getBrandImage().getBrandImageData()))
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + brandId  + "is not found or has no file data!"));
     }
 
     @Override
