@@ -226,17 +226,18 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    @Transactional
     public Brand updateBrand(Long brandId, BrandDto brandDto) {
         
+        Brand brand = brandRepo.findById(brandId)
+        .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
+
         if(brandDto.getBrandName() == null || brandDto.getBrandName().isEmpty()){
             throw new InvalidInputException("Brand name cannot be empty!");
         }
         else if(brandDto.getBrandCountry() == null || brandDto.getBrandCountry().isEmpty()){
             throw new InvalidInputException("Brand country cannot be null empty!");
         }
-
-        Brand brand = brandRepo.findById(brandId)
-        .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
 
         if(!brand.getBrandName().equalsIgnoreCase(brandDto.getBrandName())){
             Optional<Brand> oldBrand = brandRepo.findByBrandName(brandDto.getBrandName());
@@ -289,6 +290,7 @@ public class BrandServiceImpl implements BrandService {
                 brandImage.setBrandImageSize(null);
                 brandImage.setBrandImageData(null);
                 brandImage.setBrand(brand);
+                
                 brand.setBrandImage(null);
             }
         }
@@ -342,7 +344,7 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public List<BrandDropDownDto> brandDropDown(String searchBrand) {
         
-        List<Brand> brands = brandRepo.searchActiveBrands(searchBrand);
+        List<Brand> brands = brandRepo.searchActiveBrands(searchBrand.trim());
 
         List<BrandDropDownDto> brandDropDownDtoList = brands.stream().map(brand ->{
 
@@ -355,6 +357,28 @@ public class BrandServiceImpl implements BrandService {
         }).collect(Collectors.toList());
 
         return brandDropDownDtoList;
+    }
+
+    @Override
+    public void reactivateBrand(Long brandId) {
+        
+        Brand brand = brandRepo.findById(brandId)
+        .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + brandId + " is not found!"));
+
+        if (brand.getBrandStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Brand is already active!");
+        }
+
+        brand.setBrandStatus(Status.ACTIVE);
+
+        brandRepo.save(brand);
+
+        activityLogService.logActivity(
+            "Brand", 
+            brandId, 
+            brand.getBrandName(), 
+            Action.REACTIVATE, 
+            "Reactivated Brand: " + brand.getBrandName());
     }
 
 }

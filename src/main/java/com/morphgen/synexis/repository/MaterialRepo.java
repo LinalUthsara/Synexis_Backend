@@ -19,10 +19,6 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     Optional<Material> findByMaterialSKU(String materialSKU);
     List<Material> findAllByOrderByMaterialIdDesc();
 
-    @Query("SELECT m FROM Material m WHERE LOWER(m.materialName) LIKE LOWER(CONCAT(:searchMaterial, '%')) " +
-       "OR LOWER(m.materialName) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))")
-    List<Material> searchByWordPrefix(@Param("searchMaterial") String searchMaterial);
-
     @Query("SELECT m FROM Material m " +
        "WHERE m.baseUnit.unitId = :unitId OR m.otherUnit.unitId = :unitId")
     List<Material> findMaterialsByUnitId(@Param("unitId") Long unitId);
@@ -37,5 +33,23 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
 
     @Query("SELECT COUNT(m) FROM Material m WHERE m.baseUnit = :unit OR m.otherUnit = :unit")
     Long countByUnitUsage(Unit unit);
+
+    @Query("""
+    SELECT m FROM Material m 
+    WHERE m.materialStatus = ACTIVE AND (
+        LOWER(m.materialName) LIKE LOWER(CONCAT(:searchMaterial, '%')) 
+        OR LOWER(m.materialName) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+        OR LOWER(m.materialSKU) LIKE LOWER(CONCAT(:searchMaterial, '%'))
+        OR LOWER(m.materialSKU) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+        OR LOWER(m.materialDescription) LIKE LOWER(CONCAT(:searchMaterial, '%'))
+        OR LOWER(m.materialDescription) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+        OR LOWER(m.materialPartNumber) LIKE LOWER(CONCAT(:searchMaterial, '%'))
+        OR LOWER(m.materialPartNumber) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+        OR LOWER(m.materialBarcode) LIKE LOWER(CONCAT(:searchMaterial, '%'))
+        OR LOWER(m.materialBarcode) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+        OR LOWER(m.materialBarcode) LIKE LOWER(CONCAT(:searchMaterial, '%'))
+        OR LOWER(m.materialBarcode) LIKE LOWER(CONCAT('% ', :searchMaterial, '%'))
+    )""")
+    List<Material> searchActiveMaterials(@Param("searchMaterial") String searchMaterial);
 
 }

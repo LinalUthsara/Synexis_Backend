@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.morphgen.synexis.dto.CategoryDropDownDto;
 import com.morphgen.synexis.dto.CategoryDto;
@@ -21,6 +22,7 @@ import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
+import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.CategoryRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -42,11 +44,26 @@ public class CategoryServiceImpl implements CategoryService {
     private MaterialRepo materialRepo;
 
     @Override
+    @Transactional
     public Category createCategory(CategoryDto categoryDto) {
+
+        if(categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+            throw new InvalidInputException("Category name cannot be empty!");
+        }
 
         Optional<Category> existingCategory = categoryRepo.findByCategoryName(categoryDto.getCategoryName());
         if(existingCategory.isPresent()){
-            throw new DataIntegrityViolationException("A Category with the name " + categoryDto.getCategoryName() + " already exists!");
+
+            Category activeCategory = existingCategory.get();
+            
+            if (activeCategory.getCategoryStatus() == Status.ACTIVE){
+
+                throw new DataIntegrityViolationException("A Category with the name " + categoryDto.getCategoryName() + " already exists!");
+            }
+            else {
+
+                throw new DataIntegrityViolationException("A Category with the name " + categoryDto.getCategoryName() + " already exists but is currently inactive. Consider reactivating it.");
+            }
         }
 
         Category category = new Category();
@@ -172,10 +189,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public Category updateCategory(Long categoryId, CategoryDto categoryDto) {
         
         Category category = categoryRepo.findById(categoryId)
         .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
+
+        if(categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+            throw new InvalidInputException("Category name cannot be empty!");
+        }
 
         if (!category.getCategoryName().equalsIgnoreCase(categoryDto.getCategoryName())) {
          Optional<Category> oldCategory = categoryRepo.findByCategoryName(categoryDto.getCategoryName());
@@ -245,47 +267,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryDropDownDto> categoryDropDown() {
+    public List<ParentCategoryDropDownDto> parentCategoryDropDown(String searchParentCategory) {
         
-        List<Category> categories = categoryRepo.findByParentCategoryIsNullOrderByCategoryNameAsc();
+        List<Category> categories = categoryRepo.searchActiveParentCategories(searchParentCategory.trim());
 
-        List<CategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
-
-            CategoryDropDownDto categoryDropDownDto = new CategoryDropDownDto();
-
-            categoryDropDownDto.setCategoryId(category.getCategoryId());
-            categoryDropDownDto.setCategoryName(category.getCategoryName());
-
-            return categoryDropDownDto;
-        }).collect(Collectors.toList());
-
-        return categoryDropDownDtoList;
-    }
-
-    @Override
-    public List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId) {
-        
-        List<Category> categories = categoryRepo.findByParentCategory_CategoryIdOrderByCategoryNameAsc(parentCategoryId);
-
-        List<CategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
-
-            CategoryDropDownDto categoryDropDownDto = new CategoryDropDownDto();
-
-            categoryDropDownDto.setCategoryId(category.getCategoryId());
-            categoryDropDownDto.setCategoryName(category.getCategoryName());
-
-            return categoryDropDownDto;
-        }).collect(Collectors.toList());
-
-        return categoryDropDownDtoList;
-    }
-
-    @Override
-    public List<ParentCategoryDropDownDto> parentCategoryDropDown() {
-        
-        List<Category> categories = categoryRepo.findByParentCategoryIsNullOrderByCategoryNameAsc();
-
-        List<ParentCategoryDropDownDto> parentCategoryDropDownDtoList = categories.stream().map(category ->{
+        List<ParentCategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
 
             ParentCategoryDropDownDto parentCategoryDropDownDto = new ParentCategoryDropDownDto();
 
@@ -295,7 +281,47 @@ public class CategoryServiceImpl implements CategoryService {
             return parentCategoryDropDownDto;
         }).collect(Collectors.toList());
 
-        return parentCategoryDropDownDtoList;
+        return categoryDropDownDtoList;
+    }
+
+    @Override
+    public List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId, String searchSubCategory) {
+        
+        List<Category> categories = categoryRepo.searchActiveSubCategoriesByParent(parentCategoryId, searchSubCategory.trim());
+
+        List<CategoryDropDownDto> categoryDropDownDtoList = categories.stream().map(category ->{
+
+            CategoryDropDownDto categoryDropDownDto = new CategoryDropDownDto();
+
+            categoryDropDownDto.setCategoryId(category.getCategoryId());
+            categoryDropDownDto.setCategoryName(category.getCategoryName());
+
+            return categoryDropDownDto;
+        }).collect(Collectors.toList());
+
+        return categoryDropDownDtoList;
+    }
+
+    @Override
+    public void reactivateCategory(Long categoryId) {
+        
+        Category category = categoryRepo.findById(categoryId)
+        .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
+
+        if (category.getCategoryStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Category is already active!");
+        }
+
+        category.setCategoryStatus(Status.ACTIVE);
+
+        categoryRepo.save(category);
+
+            activityLogService.logActivity(
+            "Category", 
+            category.getCategoryId(), 
+            category.getCategoryName(), 
+            Action.REACTIVATE, 
+            "Reactivated Category: " + category.getCategoryName());
     }
 
 }

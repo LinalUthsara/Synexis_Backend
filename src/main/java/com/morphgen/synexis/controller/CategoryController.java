@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CategoryDropDownDto;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
@@ -38,10 +40,6 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<String> createCategory(@RequestBody CategoryDto categoryDto) throws IOException {
 
-        if(categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Category Name is Required!");
-        }
-
         categoryService.createCategory(categoryDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Category successfully created!");
@@ -49,7 +47,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryTableViewDto>> viewBrandTable() {
+    public ResponseEntity<List<CategoryTableViewDto>> viewCategoryTable() {
         
         List<CategoryTableViewDto> categoryTableViewDtoList = categoryService.viewCategoryTable();
 
@@ -65,7 +63,7 @@ public class CategoryController {
     }
 
     @GetMapping("/sideDrop")
-    public ResponseEntity<List<CategorySideDropViewDto>> viewCategorySdieDrop(){
+    public ResponseEntity<List<CategorySideDropViewDto>> viewCategorySideDrop(){
 
         List<CategorySideDropViewDto> categorySideDropViewDtoList = categoryService.viewCategorySideDrop();
 
@@ -73,18 +71,18 @@ public class CategoryController {
 
     }
 
-    @GetMapping("/categoryDropDown")
-    public ResponseEntity<List<CategoryDropDownDto>> categoryDropDown(){
+    @GetMapping("/parentCategoryDropDown")
+    public ResponseEntity<List<ParentCategoryDropDownDto>> parentCategoryDropDown(@RequestParam String searchParentCategory){
 
-        List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.categoryDropDown();
+        List<ParentCategoryDropDownDto> pCategoryDropDownDtoList = categoryService.parentCategoryDropDown(searchParentCategory);
 
-        return ResponseEntity.status(HttpStatus.OK).body(categoryDropDownDtoList);
+        return ResponseEntity.status(HttpStatus.OK).body(pCategoryDropDownDtoList);
     }
 
-    @GetMapping("/subDropDown/{parentCategoryId}")
-    public ResponseEntity<List<CategoryDropDownDto>> subCategoryDropDown(@PathVariable Long parentCategoryId){
+    @GetMapping("/subCategoryDropDown/{parentCategoryId}")
+    public ResponseEntity<List<CategoryDropDownDto>> subCategoryDropDown(@PathVariable Long parentCategoryId, @RequestParam String searchSubCategory){
 
-        List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.subCategoryDropDown(parentCategoryId);
+        List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.subCategoryDropDown(parentCategoryId, searchSubCategory);
 
         return ResponseEntity.status(HttpStatus.OK).body(categoryDropDownDtoList);
     }
@@ -105,12 +103,12 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body("Category successfully deleted!");
     }
 
-    @GetMapping("/parentCategoryDropDown")
-    public ResponseEntity<List<ParentCategoryDropDownDto>> parentCategoryDropDown(){
+    @PatchMapping("/reactivate/{categoryId}")
+    public ResponseEntity<String> reactivateCategory(@PathVariable Long categoryId){
+        
+        categoryService.reactivateCategory(categoryId);
 
-        List<ParentCategoryDropDownDto> pCategoryDropDownDtoList = categoryService.parentCategoryDropDown();
-
-        return ResponseEntity.status(HttpStatus.OK).body(pCategoryDropDownDtoList);
+        return ResponseEntity.status(HttpStatus.OK).body("Category successfully reactivated!");
     }
-    
+
 }

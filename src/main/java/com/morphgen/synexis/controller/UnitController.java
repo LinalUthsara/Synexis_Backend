@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.BaseUnitDropDownDto;
@@ -38,13 +40,6 @@ public class UnitController {
     @PostMapping
     public ResponseEntity<String> createUnit(@RequestBody UnitDto unitDto) {
         
-        if(unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Unit Name is Required!");
-        }
-        else if(unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Unit Short Name is Required!");
-        }
-
         unitService.createUnit(unitDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Unit successfully created!");
@@ -67,17 +62,17 @@ public class UnitController {
     }
 
     @GetMapping("/baseUnitDropDown")
-    public ResponseEntity<List<BaseUnitDropDownDto>> baseUnitDropDown() {
+    public ResponseEntity<List<BaseUnitDropDownDto>> baseUnitDropDown(@RequestParam String searchUnit) {
         
-        List<BaseUnitDropDownDto> baseUnitDropDownDtoList = unitService.baseUnitDropDown();
+        List<BaseUnitDropDownDto> baseUnitDropDownDtoList = unitService.baseUnitDropDown(searchUnit);
 
         return ResponseEntity.status(HttpStatus.OK).body(baseUnitDropDownDtoList);
     }
 
     @GetMapping("/otherUnitDropDown/{baseUnitId}")
-    public ResponseEntity<List<UnitDropDownDto>> otherUnitDropDown(@PathVariable Long baseUnitId) {
+    public ResponseEntity<List<UnitDropDownDto>> otherUnitDropDown(@PathVariable Long baseUnitId, @RequestParam String searchUnit) {
         
-        List<UnitDropDownDto> unitDropDownDtoList = unitService.otherUnitDropDown(baseUnitId);
+        List<UnitDropDownDto> unitDropDownDtoList = unitService.otherUnitDropDown(baseUnitId, searchUnit);
 
         return ResponseEntity.status(HttpStatus.OK).body(unitDropDownDtoList);
     }
@@ -104,6 +99,14 @@ public class UnitController {
         unitService.deleteUnit(unitId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Unit successfully deleted!");
+    }
+
+    @PatchMapping("/reactivate/{unitId}")
+    public ResponseEntity<String> reactivateUnit(@PathVariable Long unitId){
+
+        unitService.reactivateUnit(unitId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Unit successfully reactivated!");
     }
 
 }

@@ -50,7 +50,7 @@ public class JobController {
     }
 
     @GetMapping("/attachment/{attachmentId}")
-    public ResponseEntity<byte[]> getBrandImage(@PathVariable Long attachmentId) {
+    public ResponseEntity<byte[]> viewJobAttachment(@PathVariable Long attachmentId) {
         
         return jobService.viewAttachment(attachmentId);
     }

@@ -29,4 +29,6 @@ public interface BrandService {
     
     void deleteBrand(Long brandId);
 
+    void reactivateBrand(Long brandId);
+
 }

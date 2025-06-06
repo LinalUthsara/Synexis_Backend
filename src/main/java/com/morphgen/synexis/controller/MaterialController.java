@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -37,22 +38,6 @@ public class MaterialController {
 
     @PostMapping
     public ResponseEntity<String> createMaterial(@ModelAttribute MaterialDto materialDto) throws IOException{
-
-        if (materialDto.getMaterialName() == null || materialDto.getMaterialName().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Material Name is Required!");
-        }
-        else if (materialDto.getMaterialSKU() == null || materialDto.getMaterialSKU().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Material SKU is Required!");
-        }
-        else if (materialDto.getAlertQuantity() == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Alert Quantity is Required!");
-        }
-        else if (materialDto.getMaterialType() == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Material Type is Required!");
-        }
-        else if (materialDto.getMaterialInventoryType() == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Inventory Type is Required!");
-        }
 
         materialService.createMaterial(materialDto);
 
@@ -97,7 +82,7 @@ public class MaterialController {
     }
 
     @DeleteMapping("/{materialId}")
-    public ResponseEntity<String> deleteBrand(@PathVariable Long materialId){
+    public ResponseEntity<String> deleteMaterial(@PathVariable Long materialId){
 
         materialService.deleteMaterial(materialId);
 
@@ -110,6 +95,14 @@ public class MaterialController {
         List<MaterialDropDownDto> materialDropDownDtoList = materialService.viewMaterialDropDown(searchMaterial);
         
         return ResponseEntity.status(HttpStatus.OK).body(materialDropDownDtoList);
+    }
+
+    @PatchMapping("/reactivate/{materialId}")
+    public ResponseEntity<String> reactivateMaterial(@PathVariable Long materialId){
+
+        materialService.reactivateMaterial(materialId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Material successfully reactivated!");
     }
 
 }

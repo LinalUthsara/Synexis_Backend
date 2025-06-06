@@ -22,11 +22,13 @@ public interface UnitService {
     List<UnitSideDropViewDto> viewUnitSideDrop();
     UnitViewDto viewUnitById(Long unitId);
 
-    List<BaseUnitDropDownDto> baseUnitDropDown();
-    List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId);
+    List<BaseUnitDropDownDto> baseUnitDropDown(String searchUnit);
+    List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId, String searchUnit);
 
     Unit updateUnit(Long unitId, UnitDto unitDto);
 
     void deleteUnit(Long unitId);
+
+    void reactivateUnit(Long unitId);
 
 }

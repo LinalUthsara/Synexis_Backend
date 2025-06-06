@@ -94,4 +94,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> ImageNotFoundExceptionHandler (ImageNotFoundException imageNotFoundException){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + imageNotFoundException.getMessage());
     }
+
+    @ExceptionHandler(value = FileProcessingException.class)
+    public ResponseEntity<String> FileProcessingExceptionHandler (FileProcessingException fileProcessingException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File Processing Failed: " + fileProcessingException.getMessage());
+    }
+
+    @ExceptionHandler(value = FileNotFoundException.class)
+    public ResponseEntity<String> FileNotFoundExceptionHandler (FileNotFoundException fileNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + fileNotFoundException.getMessage());
+    }
+
 }

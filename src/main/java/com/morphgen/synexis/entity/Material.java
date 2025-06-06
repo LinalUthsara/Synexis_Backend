@@ -12,13 +12,14 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import lombok.Data;
 
@@ -42,9 +43,6 @@ public class Material {
     private String materialSKU;
 
     private String materialBarcode;
-
-    @Lob
-    private byte[] materialImage;
 
     private BigDecimal materialMarketPrice;
 
@@ -102,5 +100,8 @@ public class Material {
     @JsonIgnore
     @OneToMany(mappedBy = "material", cascade = CascadeType.ALL)
     private List<ItemMaterial> itemMaterials;
+
+    @OneToOne(mappedBy = "material", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MaterialImage materialImage;
 
 }

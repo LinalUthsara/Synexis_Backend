@@ -78,7 +78,7 @@ public class CostEstimationController {
     }
 
     @PatchMapping("approval/{estimationId}")
-    public ResponseEntity<String> handleBloodCamp(@PathVariable Long estimationId, @RequestParam EstimationStatus estimationStatus){
+    public ResponseEntity<String> handleEstimation(@PathVariable Long estimationId, @RequestParam EstimationStatus estimationStatus){
 
         costEstimationService.handleEstimation(estimationId, estimationStatus);
 
