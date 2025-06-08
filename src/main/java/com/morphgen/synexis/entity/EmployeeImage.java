@@ -14,24 +14,24 @@ import lombok.Data;
 @Entity
 @Data
 
-public class BrandImage {
+public class EmployeeImage {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long brandImageId;
+    private Long employeeImageId;
 
-    private String brandImageName;
+    private String employeeImageName;
 
-    private String brandImageType;
+    private String employeeImageType;
 
-    private Long brandImageSize;
+    private Long employeeImageSize;
 
     @Lob
-    private byte[] brandImageData;
+    private byte[] employeeImageData;
 
     @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "brandId")
-    private Brand brand;
-    
+    @JoinColumn(name = "employeeId")
+    private Employee employee;
+
 }

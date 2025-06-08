@@ -30,11 +30,11 @@ public class EntityDiffUtil {
                     boolean newEmpty = (newBytes == null || newBytes.length == 0);
 
                     if (oldEmpty && !newEmpty) {
-                        changes.add("Added " + fieldName + ": image added");
+                        changes.add("Added " + fieldName);
                     } else if (!oldEmpty && newEmpty) {
-                        changes.add("Removed " + fieldName + ": image removed");
+                        changes.add("Removed " + fieldName);
                     } else if (!oldEmpty && !newEmpty && !Arrays.equals(oldBytes, newBytes)) {
-                        changes.add("Updated " + fieldName + ": image updated");
+                        changes.add("Updated " + fieldName);
                     }
                     continue;
                 }

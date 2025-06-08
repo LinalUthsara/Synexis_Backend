@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.morphgen.synexis.dto.AssociatedMaterialDto;
 import com.morphgen.synexis.dto.BaseUnitDropDownDto;
@@ -20,6 +21,7 @@ import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
+import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.exception.UnitNotFoundException;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.repository.UnitRepo;
@@ -41,15 +43,44 @@ public class UnitServiceImpl implements UnitService {
     private MaterialRepo materialRepo;
 
     @Override
+    @Transactional
     public Unit createUnit(UnitDto unitDto) {
+
+        if(unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+            throw new InvalidInputException("Unit name cannot be empty!");
+        }
+        else if(unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+            throw new InvalidInputException("Unit short name cannot be empty!");
+        }
         
         Optional<Unit> existingUnitByName = unitRepo.findByUnitName(unitDto.getUnitName());
         if(existingUnitByName.isPresent()){
-            throw new DataIntegrityViolationException("A Unit with the name " + unitDto.getUnitName() + " already exists!");
+
+            Unit activeUnitN = existingUnitByName.get();
+
+            if (activeUnitN.getUnitStatus() == Status.ACTIVE){
+
+                throw new DataIntegrityViolationException("A Category with the name " + activeUnitN.getUnitName() + " already exists!");
+            }
+            else {
+
+                throw new DataIntegrityViolationException("A Category with the name " + activeUnitN.getUnitName() + " already exists but is currently inactive. Consider reactivating it.");
+            }
         }
+
         Optional<Unit> existingUnitByShortName = unitRepo.findByUnitShortName(unitDto.getUnitShortName());
         if(existingUnitByShortName.isPresent()){
-            throw new DataIntegrityViolationException("A Unit with the short name " + unitDto.getUnitShortName() + " already exists!");
+
+            Unit activeUnitSN = existingUnitByShortName.get();
+
+            if (activeUnitSN.getUnitStatus() == Status.ACTIVE){
+
+                throw new DataIntegrityViolationException("A Category with the short name " + activeUnitSN.getUnitShortName() + " already exists!");
+            }
+            else {
+
+                throw new DataIntegrityViolationException("A Category with the short name " + activeUnitSN.getUnitShortName() + " already exists but is currently inactive. Consider reactivating it.");
+            }
         }
         
         Unit unit = new Unit();
@@ -163,10 +194,18 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
+    @Transactional
     public Unit updateUnit(Long unitId, UnitDto unitDto) {
         
         Unit unit = unitRepo.findById(unitId)
         .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
+
+        if(unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+            throw new InvalidInputException("Unit name cannot be empty!");
+        }
+        else if(unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+            throw new InvalidInputException("Unit short name cannot be empty!");
+        }
 
         if (!unit.getUnitName().equalsIgnoreCase(unitDto.getUnitName())){
             Optional<Unit> existingUnitByName = unitRepo.findByUnitName(unitDto.getUnitName());
@@ -251,9 +290,9 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<BaseUnitDropDownDto> baseUnitDropDown() {
+    public List<BaseUnitDropDownDto> baseUnitDropDown(String searchCategory) {
         
-        List<Unit> units = unitRepo.findByBaseUnitIsNullOrderByUnitNameAsc();
+        List<Unit> units = unitRepo.searchActiveBaseUnits(searchCategory.trim());
 
         List<BaseUnitDropDownDto> BaseUnitDropDownDto = units.stream().map(unit ->{
 
@@ -261,6 +300,7 @@ public class UnitServiceImpl implements UnitService {
 
             baseUnitDropDownDto.setBaseUnitId(unit.getUnitId());
             baseUnitDropDownDto.setBaseUnitName(unit.getUnitName());
+            baseUnitDropDownDto.setBaseUnitShortName(unit.getUnitShortName());
 
             return baseUnitDropDownDto;
         }).collect(Collectors.toList());
@@ -269,9 +309,9 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId) {
+    public List<UnitDropDownDto> otherUnitDropDown(Long baseUnitId, String searchCategory) {
                 
-        List<Unit> units = unitRepo.findByBaseUnit_UnitIdOrderByUnitNameAsc(baseUnitId);
+        List<Unit> units = unitRepo.searchActiveSubUnitsByBase(baseUnitId, searchCategory.trim());
 
         List<UnitDropDownDto> unitDropDownDtoList = units.stream().map(unit ->{
 
@@ -279,11 +319,34 @@ public class UnitServiceImpl implements UnitService {
 
             unitDropDownDto.setOtherUnitId(unit.getUnitId());
             unitDropDownDto.setOtherUnitName(unit.getUnitName());
+            unitDropDownDto.setOtherUnitShortName(unit.getUnitShortName());
 
             return unitDropDownDto;
         }).collect(Collectors.toList());
 
         return unitDropDownDtoList;
+    }
+
+    @Override
+    public void reactivateUnit(Long unitId) {
+        
+        Unit unit = unitRepo.findById(unitId)
+        .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
+
+        if (unit.getUnitStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Unit is already active!");
+        }
+
+        unit.setUnitStatus(Status.ACTIVE);
+
+        unitRepo.save(unit);
+
+        activityLogService.logActivity(
+            "Unit", 
+            unit.getUnitId(), 
+            unit.getUnitName(), 
+            Action.REACTIVATE, 
+            "Reactivated Unit: " + unit.getUnitName());
     }
 
 }

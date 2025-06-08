@@ -10,4 +10,6 @@ public class UnitDropDownDto {
 
     private String otherUnitName;
 
+    private String otherUnitShortName;
+
 }

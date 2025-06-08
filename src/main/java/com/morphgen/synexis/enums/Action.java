@@ -4,6 +4,7 @@ public enum Action {
     
     CREATE,
     UPDATE,
-    DELETE
+    DELETE,
+    REACTIVATE
 
 }

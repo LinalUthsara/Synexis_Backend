@@ -11,27 +11,26 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 
-@Entity
 @Data
+@Entity
 
-public class BrandImage {
+public class MaterialImage {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long brandImageId;
+    private Long materialImageId;
 
-    private String brandImageName;
+    private String materialImageName;
 
-    private String brandImageType;
+    private String materialImageType;
 
-    private Long brandImageSize;
+    private Long materialImageSize;
 
     @Lob
-    private byte[] brandImageData;
+    private byte[] materialImageData;
 
     @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "brandId")
-    private Brand brand;
-    
+    @JoinColumn(name = "materialId")
+    private Material material;
 }

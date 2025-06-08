@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,7 +44,6 @@ public class BrandController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Brand successfully created!");
     }
-
 
     @GetMapping("/image/{brandId}")
     public ResponseEntity<byte[]> getBrandImage(@PathVariable Long brandId) {
@@ -85,7 +85,6 @@ public class BrandController {
         return ResponseEntity.status(HttpStatus.OK).body(brandViewDto);
     }
 
-
     @PutMapping("/{brandId}")
     public ResponseEntity<String> updateBrand(@PathVariable Long brandId, @ModelAttribute BrandDto brandDto){
         
@@ -100,6 +99,14 @@ public class BrandController {
         brandService.deleteBrand(brandId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Brand successfully deleted!");
+    }
+
+    @PatchMapping("/reactivate/{brandId}")
+    public ResponseEntity<String> reactivateBrand(@PathVariable Long brandId){
+
+        brandService.reactivateBrand(brandId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Brand successfully reactivated!");
     }
 
 }

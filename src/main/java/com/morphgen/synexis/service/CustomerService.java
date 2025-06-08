@@ -28,6 +28,8 @@ public interface CustomerService {
 
     File getCustomerFile(Long customerId, DocumentType documentType);
 
+    void reactivateCustomer(Long customerId);
+
 }
 
 

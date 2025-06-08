@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.morphgen.synexis.dto.CustomerDto;
@@ -24,6 +25,9 @@ import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.DocumentType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CustomerNotFoundException;
+import com.morphgen.synexis.exception.FileNotFoundException;
+import com.morphgen.synexis.exception.FileProcessingException;
+import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.CustomerRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CustomerService;
@@ -55,7 +59,12 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public Customer createCustomer(CustomerDto customerDto) {
+
+        if(customerDto.getCustomerEmail() == null || customerDto.getCustomerEmail().isEmpty()){
+            throw new InvalidInputException("Customer email cannot be empty!");
+        }
         
         Optional<Customer> existingCustomerEmail = customerRepo.findByCustomerEmail(customerDto.getCustomerEmail());
         if (existingCustomerEmail.isPresent()){
@@ -92,7 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
                 customerFiles.add(createFile(customerDto.getSVAT(), DocumentType.SVAT, customer));
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to process one of the document files!", e);
+            throw new FileProcessingException("Unable to process file. Please ensure the file is valid and try again!");
         }
 
         customer.setFiles(customerFiles);
@@ -104,8 +113,8 @@ public class CustomerServiceImpl implements CustomerService {
             newCustomer.getCustomerId(),
             newCustomer.getCustomerFirstName(),
             Action.CREATE, 
-            "Created Customer: " + newCustomer.getCustomerFirstName());
-
+            "Created Customer: " + newCustomer.getCustomerPrefix() + " " + newCustomer.getCustomerFirstName() + " " + newCustomer.getCustomerLastName());
+            
         return newCustomer;
     }
 
@@ -186,10 +195,15 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public Customer updateCustomer(Long customerId, CustomerDto customerDto) {
         
         Customer customer = customerRepo.findById(customerId)
         .orElseThrow(() -> new CustomerNotFoundException("Customer ID: " + customerId + " is not found!"));
+
+        if(customerDto.getCustomerEmail() == null || customerDto.getCustomerEmail().isEmpty()){
+            throw new InvalidInputException("Customer email cannot be empty!");
+        }
 
         if (!customer.getCustomerEmail().equalsIgnoreCase(customerDto.getCustomerEmail())) {
             Optional<Customer> existingCustomerEmail = customerRepo.findByCustomerEmail(customerDto.getCustomerEmail());
@@ -198,10 +212,10 @@ public class CustomerServiceImpl implements CustomerService {
             }
         }
         
-        Map<DocumentType, String> fileNames = customer.getFiles().stream()
+        Map<DocumentType, byte[]> fileData = customer.getFiles().stream()
         .collect(Collectors.toMap(
         File::getDocumentType,
-        File::getFilename
+        File::getFileData
         ));
 
         CustomerUpdateDto existingCustomer = CustomerUpdateDto.builder()
@@ -216,9 +230,9 @@ public class CustomerServiceImpl implements CustomerService {
         .city(customer.getCustomerAddress().getCity())
         .zipCode(customer.getCustomerAddress().getZipCode())
         .customerStatus(customer.getCustomerStatus())
-        .fileNameBRC(fileNames.getOrDefault(DocumentType.BRC, null))
-        .fileNameVAT(fileNames.getOrDefault(DocumentType.VAT, null))
-        .fileNameSVAT(fileNames.getOrDefault(DocumentType.SVAT, null))
+        .fileBRC(fileData.getOrDefault(DocumentType.BRC, null))
+        .fileVAT(fileData.getOrDefault(DocumentType.VAT, null))
+        .fileSVAT(fileData.getOrDefault(DocumentType.SVAT, null))
         .build();
 
         customer.setCustomerPrefix(customerDto.getCustomerPrefix());
@@ -248,7 +262,7 @@ public class CustomerServiceImpl implements CustomerService {
             }
         } 
         catch (IOException e) {
-            throw new IllegalArgumentException("Failed to process one of the document files!", e);
+            throw new FileProcessingException("Unable to process file. Please ensure the file is valid and try again!");
         }
 
         customer.setFiles(updatedFiles);
@@ -266,10 +280,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         Customer updatedCustomer = customerRepo.save(customer);
 
-        Map<DocumentType, String> newFileNames = updatedCustomer.getFiles().stream()
+        Map<DocumentType, byte[]> newFileData = updatedCustomer.getFiles().stream()
         .collect(Collectors.toMap(
         File::getDocumentType,
-        File::getFilename
+        File::getFileData
         ));
 
         CustomerUpdateDto newCustomer = CustomerUpdateDto.builder()
@@ -284,9 +298,9 @@ public class CustomerServiceImpl implements CustomerService {
         .city(updatedCustomer.getCustomerAddress().getCity())
         .zipCode(updatedCustomer.getCustomerAddress().getZipCode())
         .customerStatus(updatedCustomer.getCustomerStatus())
-        .fileNameBRC(newFileNames.getOrDefault(DocumentType.BRC, null))
-        .fileNameVAT(newFileNames.getOrDefault(DocumentType.VAT, null))
-        .fileNameSVAT(newFileNames.getOrDefault(DocumentType.SVAT, null))
+        .fileBRC(newFileData.getOrDefault(DocumentType.BRC, null))
+        .fileVAT(newFileData.getOrDefault(DocumentType.VAT, null))
+        .fileSVAT(newFileData.getOrDefault(DocumentType.SVAT, null))
         .build();
 
         String changes = EntityDiffUtil.describeChanges(existingCustomer, newCustomer);
@@ -316,7 +330,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer.getCustomerId(),
             customer.getCustomerFirstName(), 
             Action.DELETE, 
-            "Deleted Customer: " + customer.getCustomerFirstName());
+            "Deleted Customer: " + customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
     }
 
     @Override
@@ -328,6 +342,28 @@ public class CustomerServiceImpl implements CustomerService {
         return customer.getFiles().stream()
             .filter(f -> f.getDocumentType() == documentType)
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Requested document not found for this customer"));
+            .orElseThrow(() -> new FileNotFoundException("Requested document not found for this customer"));
+    }
+
+    @Override
+    public void reactivateCustomer(Long customerId) {
+        
+        Customer customer = customerRepo.findById(customerId)
+        .orElseThrow(() -> new CustomerNotFoundException("Customer ID: " + customerId + " is not found!"));
+
+        if (customer.getCustomerStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Brand is already active!");
+        }
+
+        customer.setCustomerStatus(Status.ACTIVE);
+
+        customerRepo.save(customer);
+
+        activityLogService.logActivity(
+            "Customer", 
+            customer.getCustomerId(),
+            customer.getCustomerFirstName(), 
+            Action.REACTIVATE, 
+            "Reactivated Customer: " + customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
     }
 }

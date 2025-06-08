@@ -51,6 +51,7 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 case CREATE -> "created By";
                 case UPDATE -> "updated By";
                 case DELETE -> "deleted By";
+                case REACTIVATE -> "reactivated By";
             });
 
             activityLogSideDropViewDto.setActLogTimestamp(activitylog.getActLogTimestamp()
@@ -79,6 +80,7 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 case CREATE -> "created By";
                 case UPDATE -> "updated By";
                 case DELETE -> "deleted By";
+                case REACTIVATE -> "reactivated By";
             });
 
             activityLogViewDto.setActLogDetails(activitylog.getActLogDetails());

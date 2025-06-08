@@ -43,6 +43,7 @@ import com.morphgen.synexis.enums.JobStatus;
 import com.morphgen.synexis.exception.AttachmentNotFoundException;
 import com.morphgen.synexis.exception.AttachmentProcessingException;
 import com.morphgen.synexis.exception.CostEstimationNotFoundException;
+import com.morphgen.synexis.exception.IllegalStatusTransitionException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidStatusException;
 import com.morphgen.synexis.exception.JobNotFoundException;
@@ -744,6 +745,51 @@ public class JobServiceImpl implements JobService {
         job.setJobStatus(JobStatus.CLOSED);
 
         jobRepo.save(job);
+    }
+
+    @Override
+    public Job handleJob(Long jobId, JobStatus jobStatus) {
+
+        Job job = jobRepo.findById(jobId)
+        .orElseThrow(() -> new JobNotFoundException("Job ID: " + jobId + " is not found!"));
+
+        JobStatus existingStatus = job.getJobStatus();
+
+        boolean isValidTransition = false;
+
+        switch (existingStatus){
+
+            case PENDING:
+                isValidTransition = (jobStatus == JobStatus.APPROVED_BY_SALESMANAGER || jobStatus == JobStatus.REJECTED_BY_SALESMANAGER);
+                break;
+
+            case APPROVED_BY_SALESMANAGER:
+                isValidTransition = (jobStatus == JobStatus.APPROVED || jobStatus == JobStatus.REJECTED_BY_ACCOUNTANT);
+                break;
+
+            case REJECTED_BY_SALESMANAGER:
+            case REJECTED_BY_ACCOUNTANT:
+            case APPROVED:            
+            case READY_FOR_DESIGNING:
+            case READY_FOR_PRODUCTION:
+            case ONGOING:
+            case BLOCKED:
+            case WAITING_FOR_MATERIALS:
+            case COMPLETED:
+            case CLOSED:
+            isValidTransition = false;
+            break;
+        }
+
+        if (!isValidTransition) {
+            throw new IllegalStatusTransitionException("Transition from " + existingStatus + " to " + jobStatus + " is not valid!");
+        }
+
+        job.setJobStatus(jobStatus);
+
+        Job updatedJob = jobRepo.save(job);
+
+        return updatedJob;
     }
 
 }

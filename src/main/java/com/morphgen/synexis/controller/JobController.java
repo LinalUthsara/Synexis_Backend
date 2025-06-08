@@ -9,16 +9,19 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.JobDto;
 import com.morphgen.synexis.dto.JobSideDropViewDto;
 import com.morphgen.synexis.dto.JobTableViewDto;
 import com.morphgen.synexis.dto.JobViewDto;
+import com.morphgen.synexis.enums.JobStatus;
 import com.morphgen.synexis.service.JobService;
 
 @RestController
@@ -50,7 +53,7 @@ public class JobController {
     }
 
     @GetMapping("/attachment/{attachmentId}")
-    public ResponseEntity<byte[]> getBrandImage(@PathVariable Long attachmentId) {
+    public ResponseEntity<byte[]> viewJobAttachment(@PathVariable Long attachmentId) {
         
         return jobService.viewAttachment(attachmentId);
     }
@@ -86,6 +89,14 @@ public class JobController {
         jobService.deleteJob(jobId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Job successfully deleted!");
+    }
+
+    @PatchMapping("approval/{jobId}")
+    public ResponseEntity<String> handleJob(@PathVariable Long jobId, @RequestParam JobStatus jobStatus){
+
+        jobService.handleJob(jobId, jobStatus);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Job successfully " + jobStatus + "!");
     }
 
 }

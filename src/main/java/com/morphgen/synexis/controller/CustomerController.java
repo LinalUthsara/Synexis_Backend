@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,10 +41,6 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<String> createCustomer(@ModelAttribute CustomerDto customerDto) throws IOException {
         
-        if(customerDto.getCustomerEmail() == null || customerDto.getCustomerEmail().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Customer Email is Required!");
-        }
-
         customerService.createCustomer(customerDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Customer successfully created!");
@@ -101,5 +98,13 @@ public class CustomerController {
         customerService.deleteCustomer(customerId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Customer successfully deleted!");
+    }
+
+    @PatchMapping("/reactivate/{customerId}")
+    public ResponseEntity<String> reactivateCustomer(@PathVariable Long customerId){
+
+        customerService.reactivateCustomer(customerId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Customer successfully reactivated!");
     }
 }

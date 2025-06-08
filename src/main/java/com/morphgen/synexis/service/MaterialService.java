@@ -28,5 +28,7 @@ public interface MaterialService {
     Material updateMaterial(Long materialId, MaterialDto materialDto);
 
     void deleteMaterial(Long materialId);
+
+    void reactivateMaterial(Long materialId);
     
 }

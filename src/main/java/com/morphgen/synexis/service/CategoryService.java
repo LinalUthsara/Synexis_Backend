@@ -23,12 +23,13 @@ public interface CategoryService {
     CategoryViewDto viewCategoryById(Long categoryId);
 
 
-    List<ParentCategoryDropDownDto> parentCategoryDropDown();
-    List<CategoryDropDownDto> categoryDropDown();
-    List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId);
+    List<ParentCategoryDropDownDto> parentCategoryDropDown(String searchParentCategory);
+    List<CategoryDropDownDto> subCategoryDropDown(Long parentCategoryId, String searchSubCategory);
 
     Category updateCategory(Long categoryId, CategoryDto categoryDto);
 
     void deleteCategory(Long categoryId);
+
+    void reactivateCategory(Long categoryId);
 
 }

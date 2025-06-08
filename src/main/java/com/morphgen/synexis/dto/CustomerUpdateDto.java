@@ -2,6 +2,7 @@ package com.morphgen.synexis.dto;
 
 import com.morphgen.synexis.enums.Status;
 
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,11 +35,14 @@ public class CustomerUpdateDto {
 
     private String zipCode;
 
-    private String fileNameBRC;
+    @Lob
+    private byte[] fileBRC;
 
-    private String fileNameVAT;
+    @Lob
+    private byte[] fileVAT;
 
-    private String fileNameSVAT;
+    @Lob
+    private byte[] fileSVAT;
 
     private Status customerStatus;
 
