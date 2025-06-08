@@ -296,7 +296,7 @@ public class MaterialServiceImpl implements MaterialService {
             .map(material -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                 .body(material.getMaterialImage().getMaterialImageData()))
-            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + materialId  + "is not found or has no file data!"));
+            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + materialId  + "is not found or has no image data!"));
     }
 
     @Override

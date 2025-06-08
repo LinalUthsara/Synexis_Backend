@@ -82,7 +82,7 @@ public class CostEstimationController {
 
         costEstimationService.handleEstimation(estimationId, estimationStatus);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Cost Estimation successfully " + estimationStatus + " !");
+        return ResponseEntity.status(HttpStatus.OK).body("Cost Estimation successfully " + estimationStatus + "!");
     }
 
 }

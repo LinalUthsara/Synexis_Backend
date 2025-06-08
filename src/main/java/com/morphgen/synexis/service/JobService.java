@@ -10,6 +10,7 @@ import com.morphgen.synexis.dto.JobSideDropViewDto;
 import com.morphgen.synexis.dto.JobTableViewDto;
 import com.morphgen.synexis.dto.JobViewDto;
 import com.morphgen.synexis.entity.Job;
+import com.morphgen.synexis.enums.JobStatus;
 
 @Service
 
@@ -25,4 +26,6 @@ public interface JobService {
     Job updateJob(Long jobId, JobDto jobDto);
     
     void deleteJob(Long jobId);
+
+    Job handleJob(Long jobId, JobStatus jobStatus);
 }

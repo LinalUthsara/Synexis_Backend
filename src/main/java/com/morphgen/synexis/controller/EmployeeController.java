@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,13 +37,6 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<String> createEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException {
         
-        if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Employee Email is Required!");
-        }
-        else if(employeeDto.getEmployeeNIC() == null || employeeDto.getEmployeeNIC().isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation Failed: Employee NIC is Required!");
-        }
-
         employeeService.createEmployee(employeeDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("New Employee successfully created!");
@@ -92,6 +86,14 @@ public class EmployeeController {
         employeeService.deleteEmployee(employeeId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Employee successfully deleted!");
+    }
+
+    @PatchMapping("/reactivate/{employeeId}")
+    public ResponseEntity<String> reactivateEmployee(@PathVariable Long employeeId){
+
+        employeeService.reactivateEmployee(employeeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Employee successfully reactivated!");
     }
 
 }

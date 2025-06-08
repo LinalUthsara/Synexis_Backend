@@ -113,8 +113,8 @@ public class CustomerServiceImpl implements CustomerService {
             newCustomer.getCustomerId(),
             newCustomer.getCustomerFirstName(),
             Action.CREATE, 
-            "Created Customer: " + newCustomer.getCustomerFirstName());
-
+            "Created Customer: " + newCustomer.getCustomerPrefix() + " " + newCustomer.getCustomerFirstName() + " " + newCustomer.getCustomerLastName());
+            
         return newCustomer;
     }
 

@@ -91,6 +91,7 @@ public class BrandServiceImpl implements BrandService {
         
         try{
             if(brandDto.getBrandImage() !=null && !brandDto.getBrandImage().isEmpty()){
+                
                 BrandImage brandImage = new BrandImage();
                 
                 brandImage.setBrandImageName(brandDto.getBrandImage().getOriginalFilename());
@@ -125,7 +126,7 @@ public class BrandServiceImpl implements BrandService {
             .map(brand -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                 .body(brand.getBrandImage().getBrandImageData()))
-            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + brandId  + "is not found or has no file data!"));
+            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + brandId  + "is not found or has no image data!"));
     }
 
     @Override
@@ -270,7 +271,9 @@ public class BrandServiceImpl implements BrandService {
 
         try{
             if(brandDto.getBrandImage() !=null && !brandDto.getBrandImage().isEmpty()){
+                
                 BrandImage brandImage = brand.getBrandImage();
+                
                 if (brandImage == null) {
                     brandImage = new BrandImage();
                 }

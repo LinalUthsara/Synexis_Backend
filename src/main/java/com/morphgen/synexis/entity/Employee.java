@@ -4,13 +4,15 @@ import java.time.LocalDate;
 
 import com.morphgen.synexis.enums.Status;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,8 +43,8 @@ public class Employee {
 
     private String employeeGender;
 
-    @Lob
-    private byte[] employeeImage;
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private EmployeeImage employeeImage;
 
     private String employeeEmail;
 

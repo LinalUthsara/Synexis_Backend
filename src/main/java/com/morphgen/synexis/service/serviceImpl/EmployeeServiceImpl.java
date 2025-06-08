@@ -14,12 +14,17 @@ import org.springframework.stereotype.Service;
 import com.morphgen.synexis.dto.EmployeeDto;
 import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
+import com.morphgen.synexis.dto.EmployeeUpdateDto;
 import com.morphgen.synexis.dto.EmployeeViewDto;
 import com.morphgen.synexis.entity.Address;
 import com.morphgen.synexis.entity.Employee;
+import com.morphgen.synexis.entity.EmployeeImage;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.EmployeeNotFoundException;
+import com.morphgen.synexis.exception.ImageNotFoundException;
+import com.morphgen.synexis.exception.ImageProcessingException;
+import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.EmployeeService;
@@ -38,6 +43,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee createEmployee(EmployeeDto employeeDto) {
+
+        if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
+            throw new InvalidInputException("Employee email cannot be empty!");
+        }
+        else if(employeeDto.getEmployeeNIC() == null || employeeDto.getEmployeeNIC().isEmpty()){
+            throw new InvalidInputException("Employee NIC cannot be empty!");
+        }
         
         Optional<Employee> existingEmployeeEmail = employeeRepo.findByEmployeeEmail(employeeDto.getEmployeeEmail());
         if (existingEmployeeEmail.isPresent()){
@@ -60,11 +72,20 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         try{
             if (employeeDto.getEmployeeImage() != null && !employeeDto.getEmployeeImage().isEmpty()) {
-                employee.setEmployeeImage(employeeDto.getEmployeeImage().getBytes());
+                
+                EmployeeImage employeeImage = new EmployeeImage();
+                
+                employeeImage.setEmployeeImageName(employeeDto.getEmployeeImage().getOriginalFilename());
+                employeeImage.setEmployeeImageType(employeeDto.getEmployeeImage().getContentType());
+                employeeImage.setEmployeeImageSize(employeeDto.getEmployeeImage().getSize());
+                employeeImage.setEmployeeImageData(employeeDto.getEmployeeImage().getBytes());
+                employeeImage.setEmployee(employee);
+
+                employee.setEmployeeImage(employeeImage);
             }
         }
         catch(IOException e){
-            throw new IllegalArgumentException("Failed to process image file!");
+            throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
         employee.setEmployeeEmail(employeeDto.getEmployeeEmail());
@@ -88,7 +109,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             newEmployee.getEmployeeId(),
             newEmployee.getEmployeeFirstName(),
             Action.CREATE, 
-            "Created Employee: " + newEmployee.getEmployeeFirstName());
+            "Created Employee: " + newEmployee.getEmployeePrefix() + " " + newEmployee.getEmployeeFirstName() + " " + newEmployee.getEmployeeLastName());
 
         return newEmployee;
     }
@@ -97,11 +118,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public ResponseEntity<byte[]> viewEmployeeImage(Long employeeId) {
         
         return employeeRepo.findById(employeeId)
-            .filter(employee -> employee.getEmployeeImage() != null)
+            .filter(employee -> employee.getEmployeeImage().getEmployeeImageData() != null)
             .map(employee -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-                .body(employee.getEmployeeImage()))
-            .orElse(ResponseEntity.notFound().build());
+                .body(employee.getEmployeeImage().getEmployeeImageData()))
+            .orElseThrow(() -> new ImageNotFoundException("Employee image for " + employeeId  + "is not found or has no image data!"));
     }
 
     @Override
@@ -114,7 +135,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             EmployeeTableViewDto employeeTableViewDto = new EmployeeTableViewDto();
 
             employeeTableViewDto.setEmployeeId(employee.getEmployeeId());
-            employeeTableViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName());
+            employeeTableViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
             employeeTableViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
             employeeTableViewDto.setEmployeeEmail(employee.getEmployeeEmail());
             employeeTableViewDto.setEmployeeStatus(employee.getEmployeeStatus());
@@ -141,7 +162,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             EmployeeSideDropViewDto employeeSideDropViewDto = new EmployeeSideDropViewDto();
 
             employeeSideDropViewDto.setEmployeeId(employee.getEmployeeId());
-            employeeSideDropViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName());
+            employeeSideDropViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
 
             if (employee.getEmployeeImage() != null) {
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
@@ -191,6 +212,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepo.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
 
+        if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
+            throw new InvalidInputException("Employee email cannot be empty!");
+        }
+        else if(employeeDto.getEmployeeNIC() == null || employeeDto.getEmployeeNIC().isEmpty()){
+            throw new InvalidInputException("Employee NIC cannot be empty!");
+        }
+
         if (!employee.getEmployeeEmail().equalsIgnoreCase(employeeDto.getEmployeeEmail())) {
             Optional<Employee> existingEmployeeEmail = employeeRepo.findByEmployeeEmail(employeeDto.getEmployeeEmail());
             if (existingEmployeeEmail.isPresent()){
@@ -204,13 +232,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
 
-        Address existingAddress = new Address();
-        existingAddress.setAddressLine1(employee.getEmployeeAddress().getAddressLine1());
-        existingAddress.setAddressLine2(employee.getEmployeeAddress().getAddressLine2());
-        existingAddress.setCity(employee.getEmployeeAddress().getCity());
-        existingAddress.setZipCode(employee.getEmployeeAddress().getZipCode());
-
-        Employee existingEmployee = Employee.builder()
+        EmployeeUpdateDto existingEmployee = EmployeeUpdateDto.builder()
         .employeeId(employee.getEmployeeId())
         .employeePrefix(employee.getEmployeePrefix())
         .employeeFirstName(employee.getEmployeeFirstName())
@@ -221,8 +243,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         .employeeEmail(employee.getEmployeeEmail())
         .employeePhoneNumber(employee.getEmployeePhoneNumber())
         .Role(employee.getRole())
-        .employeeImage(employee.getEmployeeImage() != null ? employee.getEmployeeImage().clone() : null)
-        .employeeAddress(existingAddress)
+        .employeeImage(employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() !=null ? employee.getEmployeeImage().getEmployeeImageData().clone() : null)
+        .addressLine1(employee.getEmployeeAddress().getAddressLine1())
+        .addressLine2(employee.getEmployeeAddress().getAddressLine2())
+        .city(employee.getEmployeeAddress().getCity())
+        .zipCode(employee.getEmployeeAddress().getZipCode())
         .employeeStatus(employee.getEmployeeStatus())
         .build();
 
@@ -236,14 +261,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         try{
             if (employeeDto.getEmployeeImage() != null && !employeeDto.getEmployeeImage().isEmpty()) {
-                employee.setEmployeeImage(employeeDto.getEmployeeImage().getBytes());
+                
+                EmployeeImage employeeImage = employee.getEmployeeImage();
+
+                if (employeeImage == null){
+                    employeeImage = new EmployeeImage();
+                }
+
+                employeeImage.setEmployeeImageName(employeeDto.getEmployeeImage().getOriginalFilename());
+                employeeImage.setEmployeeImageType(employeeDto.getEmployeeImage().getContentType());
+                employeeImage.setEmployeeImageSize(employeeDto.getEmployeeImage().getSize());
+                employeeImage.setEmployeeImageData(employeeDto.getEmployeeImage().getBytes());
+                employeeImage.setEmployee(employee);
+
+                employee.setEmployeeImage(employeeImage);
             }
-            else if (employeeDto.getEmployeeImage() == null || employeeDto.getEmployeeImage().isEmpty()){
+            else if (employee.getEmployeeImage() != null){
+                
+                EmployeeImage employeeImage = employee.getEmployeeImage();
+
+                employeeImage.setEmployeeImageName(null);
+                employeeImage.setEmployeeImageType(null);
+                employeeImage.setEmployeeImageSize(null);
+                employeeImage.setEmployeeImageData(null);
+                employeeImage.setEmployee(employee);
+
                 employee.setEmployeeImage(null);
             }
         }
         catch(IOException e){
-            throw new IllegalArgumentException("Failed to process image file!");
+            throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
         employee.setEmployeeEmail(employeeDto.getEmployeeEmail());
@@ -262,7 +309,26 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee updatedEmployee = employeeRepo.save(employee);
 
-        String changes = EntityDiffUtil.describeChanges(existingEmployee, updatedEmployee);
+        EmployeeUpdateDto newEmployee = EmployeeUpdateDto.builder()
+        .employeeId(updatedEmployee.getEmployeeId())
+        .employeePrefix(updatedEmployee.getEmployeePrefix())
+        .employeeFirstName(updatedEmployee.getEmployeeFirstName())
+        .employeeLastName(updatedEmployee.getEmployeeLastName())
+        .employeeNIC(updatedEmployee.getEmployeeNIC())
+        .employeeDOB(updatedEmployee.getEmployeeDOB())
+        .employeeGender(updatedEmployee.getEmployeeGender())
+        .employeeEmail(updatedEmployee.getEmployeeEmail())
+        .employeePhoneNumber(updatedEmployee.getEmployeePhoneNumber())
+        .Role(updatedEmployee.getRole())
+        .employeeImage(updatedEmployee.getEmployeeImage() != null && updatedEmployee.getEmployeeImage().getEmployeeImageData() !=null ? updatedEmployee.getEmployeeImage().getEmployeeImageData().clone() : null)
+        .addressLine1(updatedEmployee.getEmployeeAddress().getAddressLine1())
+        .addressLine2(updatedEmployee.getEmployeeAddress().getAddressLine2())
+        .city(updatedEmployee.getEmployeeAddress().getCity())
+        .zipCode(updatedEmployee.getEmployeeAddress().getZipCode())
+        .employeeStatus(updatedEmployee.getEmployeeStatus())
+        .build();
+
+        String changes = EntityDiffUtil.describeChanges(existingEmployee, newEmployee);
 
         activityLogService.logActivity(
             "Employee", 
@@ -289,7 +355,29 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.getEmployeeId(),
             employee.getEmployeeFirstName(), 
             Action.DELETE, 
-            "Deleted Employee: " + employee.getEmployeeFirstName());
+            "Deleted Employee: " + employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+    }
+
+    @Override
+    public void reactivateEmployee(Long employeeId) {
+        
+        Employee employee = employeeRepo.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
+
+        if (employee.getEmployeeStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Employee is already active!");
+        }
+
+        employee.setEmployeeStatus(Status.ACTIVE);
+
+        employeeRepo.save(employee);
+
+        activityLogService.logActivity(
+            "Employee", 
+            employee.getEmployeeId(),
+            employee.getEmployeeFirstName(), 
+            Action.REACTIVATE, 
+            "Reactivated Employee: " + employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
     }
 
 }
