@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,7 @@ public class BrandController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CREATE_BRAND')")
     public ResponseEntity<String> createBrand(@ModelAttribute BrandDto brandDto) throws IOException {
 
         brandService.createBrand(brandDto);
@@ -46,12 +48,14 @@ public class BrandController {
     }
 
     @GetMapping("/image/{brandId}")
-    public ResponseEntity<byte[]> getBrandImage(@PathVariable Long brandId) {
+    @PreAuthorize("hasAuthority('BRAND_VIEW')")
+    public ResponseEntity<byte[]> viewBrandImage(@PathVariable Long brandId) {
         
         return brandService.viewBrandImage(brandId);
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('BRAND_VIEW')")
     public ResponseEntity<List<BrandTableViewDto>> viewBrandTable(){
         
         List<BrandTableViewDto> brandTableViewDtoList = brandService.viewBrandTable();
@@ -60,6 +64,7 @@ public class BrandController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('BRAND_VIEW')")
     public ResponseEntity<List<BrandSideDropViewDto>> viewBrandSideDrop(){
 
         List<BrandSideDropViewDto> brandSideDropViewDtoList = brandService.viewBrandSideDrop();
@@ -69,6 +74,7 @@ public class BrandController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<List<BrandDropDownDto>> brandDropDown(@RequestParam String searchBrand){
 
         List<BrandDropDownDto> brandDropDownDtoList = brandService.brandDropDown(searchBrand);
@@ -78,6 +84,7 @@ public class BrandController {
     }
 
     @GetMapping("/{brandId}")
+    @PreAuthorize("hasAuthority('BRAND_VIEW')")
     public ResponseEntity<BrandViewDto> viewBrandById(@PathVariable Long brandId){
 
         BrandViewDto brandViewDto = brandService.viewBrandById(brandId);
@@ -86,6 +93,7 @@ public class BrandController {
     }
 
     @PutMapping("/{brandId}")
+    @PreAuthorize("hasAuthority('BRAND_UPDATE')")
     public ResponseEntity<String> updateBrand(@PathVariable Long brandId, @ModelAttribute BrandDto brandDto){
         
         brandService.updateBrand(brandId, brandDto);
@@ -94,6 +102,7 @@ public class BrandController {
     }
 
     @DeleteMapping("/{brandId}")
+    @PreAuthorize("hasAuthority('BRAND_DELETE')")
     public ResponseEntity<String> deleteBrand(@PathVariable Long brandId){
 
         brandService.deleteBrand(brandId);
@@ -102,6 +111,7 @@ public class BrandController {
     }
 
     @PatchMapping("/reactivate/{brandId}")
+    @PreAuthorize("hasAuthority('BRAND_REACTIVATE')")
     public ResponseEntity<String> reactivateBrand(@PathVariable Long brandId){
 
         brandService.reactivateBrand(brandId);

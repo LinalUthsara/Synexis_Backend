@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.morphgen.synexis.dto.CustomerDropDownDto;
 import com.morphgen.synexis.dto.CustomerDto;
 import com.morphgen.synexis.dto.CustomerSideDropViewDto;
 import com.morphgen.synexis.dto.CustomerTableViewDto;
@@ -174,11 +175,15 @@ public class CustomerServiceImpl implements CustomerService {
         customerViewDto.setCustomerLastName(customer.getCustomerLastName());
         customerViewDto.setCustomerEmail(customer.getCustomerEmail());
         customerViewDto.setCustomerPhoneNumber(customer.getCustomerPhoneNumber());
+
+        if (customer.getCustomerAddress() != null){
+
         customerViewDto.setAddressLine1(customer.getCustomerAddress().getAddressLine1());
         customerViewDto.setAddressLine2(customer.getCustomerAddress().getAddressLine2());
         customerViewDto.setCity(customer.getCustomerAddress().getCity());
         customerViewDto.setZipCode(customer.getCustomerAddress().getZipCode());
-
+        }
+        
         for (File file : customer.getFiles()) {
         String fileUrl = DocumentUrlUtil.constructCustomerDocumentUrl(
             customer.getCustomerId(), file.getDocumentType()
@@ -334,7 +339,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public File getCustomerFile(Long customerId, DocumentType documentType) {
+    public File viewCustomerFile(Long customerId, DocumentType documentType) {
         
         Customer customer = customerRepo.findById(customerId)
         .orElseThrow(() -> new CustomerNotFoundException("Customer ID: " + customerId + " is not found!"));
@@ -365,5 +370,24 @@ public class CustomerServiceImpl implements CustomerService {
             customer.getCustomerFirstName(), 
             Action.REACTIVATE, 
             "Reactivated Customer: " + customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
+    }
+
+    @Override
+    public List<CustomerDropDownDto> customerDropDown(String searchCustomer) {
+        
+        List<Customer> customers = customerRepo.searchActiveCustomers(searchCustomer);
+
+        List<CustomerDropDownDto> customerDropDownDtoList = customers.stream().map(customer ->{
+
+            CustomerDropDownDto customerDropDownDto = new CustomerDropDownDto();
+
+            customerDropDownDto.setCustomerId(customer.getCustomerId());
+            customerDropDownDto.setCustomerName(customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerFirstName());
+
+
+            return customerDropDownDto;
+        }).collect(Collectors.toList());
+
+        return customerDropDownDtoList;
     }
 }

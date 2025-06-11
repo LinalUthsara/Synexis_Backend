@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.CustomerDropDownDto;
 import com.morphgen.synexis.dto.CustomerDto;
 import com.morphgen.synexis.dto.CustomerSideDropViewDto;
 import com.morphgen.synexis.dto.CustomerTableViewDto;
@@ -26,9 +27,11 @@ public interface CustomerService {
     
     void deleteCustomer(Long customerId);
 
-    File getCustomerFile(Long customerId, DocumentType documentType);
+    File viewCustomerFile(Long customerId, DocumentType documentType);
 
     void reactivateCustomer(Long customerId);
+
+    List<CustomerDropDownDto> customerDropDown(String searchCustomer);
 
 }
 

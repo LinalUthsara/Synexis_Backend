@@ -36,5 +36,5 @@ public class EmployeeDto {
 
     private String zipCode;
 
-    private String Role;
+    private String roleName;
 }

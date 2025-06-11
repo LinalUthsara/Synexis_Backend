@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,6 +35,7 @@ public class CostEstimationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ESTIMATION_CREATE')")
     public ResponseEntity<String> createEstimation(@RequestBody CostEstimationDto costEstimationDto) throws IOException {
         
         if(costEstimationDto.getInquiryId() == null){
@@ -46,6 +48,7 @@ public class CostEstimationController {
     }
 
     @GetMapping("inquiry/{inquiryId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_VIEW')")
     public ResponseEntity<CostEstimationTableViewDto> viewEstimationTableByInquiryId(@PathVariable Long inquiryId) {
         
         CostEstimationTableViewDto costEstimationTableViewDto = costEstimationService.viewEstimationTableByInquiryId(inquiryId);
@@ -54,6 +57,7 @@ public class CostEstimationController {
     }
 
     @GetMapping("/{estimationId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_VIEW')")
     public ResponseEntity<CostEstimationViewDto> viewEstimationById(@PathVariable Long estimationId){
 
         CostEstimationViewDto costEstimationViewDto = costEstimationService.viewEstimationById(estimationId);
@@ -62,6 +66,7 @@ public class CostEstimationController {
     }
 
     @PutMapping("/{estimationId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_UPDATE')")
     public ResponseEntity<String> updateEstimation(@PathVariable Long estimationId, @RequestBody CostEstimationDto costEstimationDto) {
         
         costEstimationService.updateEstimation(estimationId, costEstimationDto);
@@ -70,6 +75,7 @@ public class CostEstimationController {
     }
 
     @GetMapping("approval/{inquiryId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_APPROVAL_VIEW')")
     public ResponseEntity<CostEstimationTableViewDto> viewEstimationApprovalTable(@PathVariable Long inquiryId) {
         
         CostEstimationTableViewDto costEstimationTableViewDto = costEstimationService.viewEstimationApprovalTable(inquiryId);
@@ -78,6 +84,7 @@ public class CostEstimationController {
     }
 
     @PatchMapping("approval/{estimationId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_APPROVE')")
     public ResponseEntity<String> handleEstimation(@PathVariable Long estimationId, @RequestParam EstimationStatus estimationStatus){
 
         costEstimationService.handleEstimation(estimationId, estimationStatus);

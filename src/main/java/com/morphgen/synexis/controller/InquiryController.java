@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,6 +36,7 @@ public class InquiryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('INQUIRY_CREATE')")
     public ResponseEntity<String> createInquiry(@RequestBody InquiryDto inquiryDto) throws IOException {
 
         inquiryService.createInquiry(inquiryDto);
@@ -42,6 +45,7 @@ public class InquiryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('INQUIRY_VIEW')")
     public ResponseEntity<List<InquiryTableViewDto>> viewInquiryTable(){
         
         List<InquiryTableViewDto> inquiryTableViewDtoList = inquiryService.viewInquiryTable();
@@ -50,6 +54,7 @@ public class InquiryController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('INQUIRY_VIEW')")
     public ResponseEntity<List<InquirySideDropViewDto>> viewInquirySideDrop(){
 
         List<InquirySideDropViewDto> inquirySideDropViewDtoList = inquiryService.viewInquirySideDrop();
@@ -59,6 +64,7 @@ public class InquiryController {
     }
 
     @GetMapping("/{inquiryId}")
+    @PreAuthorize("hasAuthority('INQUIRY_VIEW')")
     public ResponseEntity<InquiryViewDto> viewInquiryById(@PathVariable Long inquiryId){
 
         InquiryViewDto inquiryViewDto = inquiryService.viewInquiryById(inquiryId);
@@ -67,6 +73,7 @@ public class InquiryController {
     }
 
     @PutMapping("/{inquiryId}")
+    @PreAuthorize("hasAuthority('INQUIRY_UPDATE')")
     public ResponseEntity<String> updateInquiry(@PathVariable Long inquiryId, @RequestBody InquiryDto inquiryDto){
         
         inquiryService.updateInquiry(inquiryId, inquiryDto);
@@ -75,11 +82,21 @@ public class InquiryController {
     }
 
     @DeleteMapping("/{inquiryId}")
+    @PreAuthorize("hasAuthority('INQUIRY_DELETE')")
     public ResponseEntity<String> deleteInquiry(@PathVariable Long inquiryId){
 
         inquiryService.deleteInquiry(inquiryId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Inquiry successfully deleted!");
+    }
+
+    @PatchMapping("/reactivate/{inquiryId}")
+    @PreAuthorize("hasAuthority('INQUIRY_REACTIVATE')")
+    public ResponseEntity<String> reactivateInquiry(@PathVariable Long inquiryId){
+
+        inquiryService.reactivateInquiry(inquiryId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Inquiry successfully reactivated!");
     }
 
 }

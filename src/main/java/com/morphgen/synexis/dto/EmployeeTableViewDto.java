@@ -18,7 +18,7 @@ public class EmployeeTableViewDto {
 
     private String employeePhoneNumber;
 
-    private String Role;
+    private String roleName;
 
     private Status employeeStatus;
 }

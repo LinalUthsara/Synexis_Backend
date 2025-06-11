@@ -304,5 +304,27 @@ public class InquiryServiceImpl implements InquiryService {
             Action.DELETE, 
             "Deleted Inquiry: " + inquiry.getProjectName());
     }
+
+    @Override
+    public void reactivateInquiry(Long inquiryId) {
+        
+        Inquiry inquiry = inquiryRepo.findById(inquiryId)
+        .orElseThrow(() -> new InquiryNotFoundException("Customer ID: " + inquiryId + " is not found!"));
+
+        if (inquiry.getInquiryStatus() == Status.ACTIVE){
+            throw new DataIntegrityViolationException("Inquiry is already active!");
+        }
+
+        inquiry.setInquiryStatus(Status.INACTIVE);
+
+        inquiryRepo.save(inquiry);
+
+        activityLogService.logActivity(
+            "Inquiry", 
+            inquiryId, 
+            inquiry.getProjectName(),
+            Action.REACTIVATE, 
+            "Reactivated Inquiry: " + inquiry.getProjectName());
+    }
     
 }
