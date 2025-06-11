@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,7 @@ public class CategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CATEGORY_CREATE')")
     public ResponseEntity<String> createCategory(@RequestBody CategoryDto categoryDto) throws IOException {
 
         categoryService.createCategory(categoryDto);
@@ -47,6 +49,7 @@ public class CategoryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW')")
     public ResponseEntity<List<CategoryTableViewDto>> viewCategoryTable() {
         
         List<CategoryTableViewDto> categoryTableViewDtoList = categoryService.viewCategoryTable();
@@ -55,6 +58,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}")
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW')")
     public ResponseEntity<CategoryViewDto> viewCategoryById(@PathVariable Long categoryId){
 
         CategoryViewDto categoryViewDto = categoryService.viewCategoryById(categoryId);
@@ -63,6 +67,7 @@ public class CategoryController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW')")
     public ResponseEntity<List<CategorySideDropViewDto>> viewCategorySideDrop(){
 
         List<CategorySideDropViewDto> categorySideDropViewDtoList = categoryService.viewCategorySideDrop();
@@ -72,6 +77,7 @@ public class CategoryController {
     }
 
     @GetMapping("/parentCategoryDropDown")
+    @PreAuthorize("hasAuthority('CATEGORY_CREATE') or hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<List<ParentCategoryDropDownDto>> parentCategoryDropDown(@RequestParam String searchParentCategory){
 
         List<ParentCategoryDropDownDto> pCategoryDropDownDtoList = categoryService.parentCategoryDropDown(searchParentCategory);
@@ -80,6 +86,7 @@ public class CategoryController {
     }
 
     @GetMapping("/subCategoryDropDown/{parentCategoryId}")
+    @PreAuthorize("hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<List<CategoryDropDownDto>> subCategoryDropDown(@PathVariable Long parentCategoryId, @RequestParam String searchSubCategory){
 
         List<CategoryDropDownDto> categoryDropDownDtoList = categoryService.subCategoryDropDown(parentCategoryId, searchSubCategory);
@@ -88,6 +95,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{categoryId}")
+    @PreAuthorize("hasAuthority('CATEGORY_UPDATE')")
     public ResponseEntity<String> updateCategory(@PathVariable Long categoryId, @RequestBody CategoryDto categoryDto){
         
         categoryService.updateCategory(categoryId, categoryDto);
@@ -96,6 +104,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{categoryId}")
+    @PreAuthorize("hasAuthority('CATEGORY_DELETE')")
     public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId){
         
         categoryService.deleteCategory(categoryId);
@@ -104,6 +113,7 @@ public class CategoryController {
     }
 
     @PatchMapping("/reactivate/{categoryId}")
+    @PreAuthorize("hasAuthority('CATEGORY_REACTIVATE')")
     public ResponseEntity<String> reactivateCategory(@PathVariable Long categoryId){
         
         categoryService.reactivateCategory(categoryId);

@@ -2,17 +2,21 @@ package com.morphgen.synexis.service.serviceImpl;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.ActivityLogSideDropViewDto;
 import com.morphgen.synexis.dto.ActivityLogTableViewDto;
 import com.morphgen.synexis.dto.ActivityLogViewDto;
 import com.morphgen.synexis.entity.ActivityLog;
+import com.morphgen.synexis.entity.Employee;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.repository.ActivityLogRepo;
+import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 
 @Service 
@@ -22,15 +26,21 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     @Autowired
     private ActivityLogRepo activityLogRepo;
 
+    @Autowired
+    private EmployeeRepo employeeRepo;
+
     @Override
     public void logActivity(String entity, Long entityId, String entityName, Action actLogAction, String actLogDetails) {
-        
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
         ActivityLog newLog = ActivityLog.builder()
                 .entity(entity)
                 .entityId(entityId)
                 .entityName(entityName)
                 .actLogAction(actLogAction)
                 .actLogDetails(actLogDetails)
+                .actLogPerformedBy(username)
                 .build();
         activityLogRepo.save(newLog);
     }
@@ -53,6 +63,14 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 case DELETE -> "deleted By";
                 case REACTIVATE -> "reactivated By";
             });
+
+            Optional<Employee> existingEmployee = employeeRepo.findByEmployeeEmail(activitylog.getActLogPerformedBy());
+            if (existingEmployee.isPresent()){
+
+                Employee employee = existingEmployee.get();
+
+                activityLogSideDropViewDto.setActLogPerformedBy(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+            }
 
             activityLogSideDropViewDto.setActLogTimestamp(activitylog.getActLogTimestamp()
             .format(DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm")));
@@ -83,6 +101,14 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                 case REACTIVATE -> "reactivated By";
             });
 
+            Optional<Employee> existingEmployee = employeeRepo.findByEmployeeEmail(activitylog.getActLogPerformedBy());
+            if (existingEmployee.isPresent()){
+
+                Employee employee = existingEmployee.get();
+
+                activityLogViewDto.setActLogPerformedBy(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+            }
+
             activityLogViewDto.setActLogDetails(activitylog.getActLogDetails());
 
             return activityLogViewDto;
@@ -111,6 +137,14 @@ public class ActivityLogServiceImpl implements ActivityLogService {
             activityLogTableViewDto.setEntityName(activitylog.getEntityName());
 
             activityLogTableViewDto.setActLogAction(activitylog.getActLogAction());
+
+            Optional<Employee> existingEmployee = employeeRepo.findByEmployeeEmail(activitylog.getActLogPerformedBy());
+            if (existingEmployee.isPresent()){
+
+                Employee employee = existingEmployee.get();
+
+                activityLogTableViewDto.setActLogPerformedBy(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+            }
 
             activityLogTableViewDto.setActLogDetails(activitylog.getActLogDetails());
 

@@ -46,7 +46,7 @@ public class EmployeeUpdateDto {
 
     private String zipCode;
 
-    private String Role;
+    private String roleName;
 
     private Status employeeStatus;
 

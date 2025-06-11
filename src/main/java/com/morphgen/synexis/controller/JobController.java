@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class JobController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('JOB_CREATE')")
     public ResponseEntity<String> createJob(@ModelAttribute JobDto jobDto) throws IOException {
 
         jobService.createJob(jobDto);
@@ -45,6 +47,7 @@ public class JobController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('JOB_VIEW')")
     public ResponseEntity<List<JobTableViewDto>> viewJobTable(){
         
         List<JobTableViewDto> jobTableViewDtoList = jobService.viewJobTable();
@@ -53,21 +56,23 @@ public class JobController {
     }
 
     @GetMapping("/attachment/{attachmentId}")
+    @PreAuthorize("hasAuthority('JOB_VIEW')")
     public ResponseEntity<byte[]> viewJobAttachment(@PathVariable Long attachmentId) {
         
         return jobService.viewAttachment(attachmentId);
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('JOB_VIEW')")
     public ResponseEntity<List<JobSideDropViewDto>> viewJobSideDrop(){
 
         List<JobSideDropViewDto> jobSideDropViewDtoList = jobService.viewJobSideDrop();
 
         return ResponseEntity.status(HttpStatus.OK).body(jobSideDropViewDtoList);
-
     }
 
     @GetMapping("/{jobId}")
+    @PreAuthorize("hasAuthority('JOB_VIEW')")
     public ResponseEntity<JobViewDto> viewJobById(@PathVariable Long jobId){
 
         JobViewDto jobViewDto = jobService.viewJobById(jobId);
@@ -76,6 +81,7 @@ public class JobController {
     }
 
     @PutMapping("/{jobId}")
+    @PreAuthorize("hasAuthority('JOB_UPDATE')")
     public ResponseEntity<String> updateJob(@PathVariable Long jobId, @ModelAttribute JobDto jobDto){
         
         jobService.updateJob(jobId, jobDto);
@@ -84,6 +90,7 @@ public class JobController {
     }
 
     @DeleteMapping("/{jobId}")
+    @PreAuthorize("hasAuthority('JOB_DELETE')")
     public ResponseEntity<String> deleteJob(@PathVariable Long jobId){
 
         jobService.deleteJob(jobId);
@@ -92,6 +99,7 @@ public class JobController {
     }
 
     @PatchMapping("approval/{jobId}")
+    @PreAuthorize("hasAuthority('JOB_APPROVE')")
     public ResponseEntity<String> handleJob(@PathVariable Long jobId, @RequestParam JobStatus jobStatus){
 
         jobService.handleJob(jobId, jobStatus);

@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.EmployeeDropDownDto;
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeLoginDto;
 import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
 import com.morphgen.synexis.dto.EmployeeViewDto;
@@ -27,4 +29,8 @@ public interface EmployeeService {
     void deleteEmployee(Long employeeId);
 
     void reactivateEmployee(Long employeeId);
+
+    List<EmployeeDropDownDto> employeeDropDown(String roleName, String searchEmployee);
+
+    EmployeeLoginDto viewEmployeeByEmail(String employeeEmail);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +15,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.EmployeeDropDownDto;
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeLoginDto;
 import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
 import com.morphgen.synexis.dto.EmployeeViewDto;
@@ -35,6 +39,7 @@ public class EmployeeController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('EMPLOYEE_CREATE')")
     public ResponseEntity<String> createEmployee(@ModelAttribute EmployeeDto employeeDto) throws IOException {
         
         employeeService.createEmployee(employeeDto);
@@ -43,11 +48,13 @@ public class EmployeeController {
     }
 
     @GetMapping("/image/{employeeId}")
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW')")
     public ResponseEntity<byte[]> viewEmployeeImage(@PathVariable Long employeeId) {
         return employeeService.viewEmployeeImage(employeeId);
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW')")
     public ResponseEntity<List<EmployeeTableViewDto>> viewEmployeeTable(){
         
         List<EmployeeTableViewDto> employeeTableViewDtoList = employeeService.viewEmployeeTable();
@@ -56,6 +63,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW')")
     public ResponseEntity<List<EmployeeSideDropViewDto>> viewEmployeeSideDrop(){
 
         List<EmployeeSideDropViewDto> employeeSideDropViewDtoList = employeeService.viewEmployeeSideDrop();
@@ -65,6 +73,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{employeeId}")
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW')")
     public ResponseEntity<EmployeeViewDto> viewEmployeeById(@PathVariable Long employeeId){
 
         EmployeeViewDto employeeViewDto = employeeService.viewEmployeeById(employeeId);
@@ -73,6 +82,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{employeeId}")
+    @PreAuthorize("hasAuthority('EMPLOYEE_UPDATE')")
     public ResponseEntity<String> updateEmployee(@PathVariable Long employeeId, @ModelAttribute EmployeeDto employeeDto){
         
         employeeService.updateEmployee(employeeId, employeeDto);
@@ -81,6 +91,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{employeeId}")
+    @PreAuthorize("hasAuthority('EMPLOYEE_DELETE')")
     public ResponseEntity<String> deleteEmployee(@PathVariable Long employeeId){
 
         employeeService.deleteEmployee(employeeId);
@@ -89,11 +100,30 @@ public class EmployeeController {
     }
 
     @PatchMapping("/reactivate/{employeeId}")
+    @PreAuthorize("hasAuthority('EMPLOYEE_REACTIVATE')")
     public ResponseEntity<String> reactivateEmployee(@PathVariable Long employeeId){
 
         employeeService.reactivateEmployee(employeeId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Employee successfully reactivated!");
+    }
+
+    @GetMapping("/search/{roleName}")
+    @PreAuthorize("hasAuthority('INQUIRY_CREATE')")
+    public ResponseEntity<List<EmployeeDropDownDto>> employeeDropDown(@PathVariable String roleName, @RequestParam String searchEmployee){
+
+        List<EmployeeDropDownDto> employeeDropDownDtoList = employeeService.employeeDropDown(roleName, searchEmployee);
+
+        return ResponseEntity.status(HttpStatus.OK).body(employeeDropDownDtoList);
+
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<EmployeeLoginDto> viewEmployeeByEmail(@RequestParam String employeeEmail){
+
+        EmployeeLoginDto employeeLoginDto = employeeService.viewEmployeeByEmail(employeeEmail);
+
+        return ResponseEntity.status(HttpStatus.OK).body(employeeLoginDto);
     }
 
 }

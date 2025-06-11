@@ -43,7 +43,7 @@ public class ActivityLog {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String actLogDetails;
 
-    // private String actLogPerformedBy;
+    private String actLogPerformedBy;
 
     private LocalDateTime actLogTimestamp;
 

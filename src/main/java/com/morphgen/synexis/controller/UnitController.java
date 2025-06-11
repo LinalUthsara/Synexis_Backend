@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,7 @@ public class UnitController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('UNIT_CREATE')")
     public ResponseEntity<String> createUnit(@RequestBody UnitDto unitDto) {
         
         unitService.createUnit(unitDto);
@@ -46,6 +48,7 @@ public class UnitController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('UNIT_VIEW')")
     public ResponseEntity<List<UnitTableViewDto>> viewUnitTable() {
         
         List<UnitTableViewDto> unitTableViewDtoList = unitService.viewUnitTable();
@@ -54,6 +57,7 @@ public class UnitController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('UNIT_VIEW')")
     public ResponseEntity<List<UnitSideDropViewDto>> viewUnitSideDrop() {
         
         List<UnitSideDropViewDto> unitSideDropViewDtoList = unitService.viewUnitSideDrop();
@@ -62,6 +66,7 @@ public class UnitController {
     }
 
     @GetMapping("/baseUnitDropDown")
+    @PreAuthorize("hasAuthority('UNIT_CREATE') or hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<List<BaseUnitDropDownDto>> baseUnitDropDown(@RequestParam String searchUnit) {
         
         List<BaseUnitDropDownDto> baseUnitDropDownDtoList = unitService.baseUnitDropDown(searchUnit);
@@ -70,6 +75,7 @@ public class UnitController {
     }
 
     @GetMapping("/otherUnitDropDown/{baseUnitId}")
+    @PreAuthorize("hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<List<UnitDropDownDto>> otherUnitDropDown(@PathVariable Long baseUnitId, @RequestParam String searchUnit) {
         
         List<UnitDropDownDto> unitDropDownDtoList = unitService.otherUnitDropDown(baseUnitId, searchUnit);
@@ -78,6 +84,7 @@ public class UnitController {
     }
 
     @GetMapping("/{unitId}")
+    @PreAuthorize("hasAuthority('UNIT_VIEW')")
     public ResponseEntity<UnitViewDto> viewUnitById(@PathVariable Long unitId){
 
         UnitViewDto unitViewDto = unitService.viewUnitById(unitId);
@@ -86,6 +93,7 @@ public class UnitController {
     }
 
     @PutMapping("/{unitId}")
+    @PreAuthorize("hasAuthority('UNIT_UPDATE')")
     public ResponseEntity<String> updateUnit(@PathVariable Long unitId, @RequestBody UnitDto unitDto){
         
         unitService.updateUnit(unitId, unitDto);
@@ -94,6 +102,7 @@ public class UnitController {
     }
 
     @DeleteMapping("/{unitId}")
+    @PreAuthorize("hasAuthority('UNIT_DELETE')")
     public ResponseEntity<String> deleteUnit(@PathVariable Long unitId){
 
         unitService.deleteUnit(unitId);
@@ -102,6 +111,7 @@ public class UnitController {
     }
 
     @PatchMapping("/reactivate/{unitId}")
+    @PreAuthorize("hasAuthority('UNIT_REACTIVATE')")
     public ResponseEntity<String> reactivateUnit(@PathVariable Long unitId){
 
         unitService.reactivateUnit(unitId);

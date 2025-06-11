@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class MaterialController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('MATERIAL_CREATE')")
     public ResponseEntity<String> createMaterial(@ModelAttribute MaterialDto materialDto) throws IOException{
 
         materialService.createMaterial(materialDto);
@@ -45,6 +47,7 @@ public class MaterialController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('MATERIAL_VIEW')")
     public ResponseEntity<List<MaterialTableViewDto>> viewMaterialable(){
         
         List<MaterialTableViewDto> materialTableViewDtoList = materialService.viewMaterialTable();
@@ -53,6 +56,7 @@ public class MaterialController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('MATERIAL_VIEW')")
     public ResponseEntity<List<MaterialSideDropViewDto>> viewMaterialSideDrop(){
         
         List<MaterialSideDropViewDto> materialSideDropViewDtoList = materialService.viewMaterialSideDrop();
@@ -61,6 +65,7 @@ public class MaterialController {
     }
 
     @GetMapping("/{materialId}")
+    @PreAuthorize("hasAuthority('MATERIAL_VIEW')")
     public ResponseEntity<MaterialViewDto> viewMaterialById(@PathVariable Long materialId){
 
         MaterialViewDto materialViewDto = materialService.viewMaterialById(materialId);
@@ -69,11 +74,13 @@ public class MaterialController {
     }
 
     @GetMapping("/image/{materialId}")
+    @PreAuthorize("hasAuthority('MATERIAL_VIEW')")
     public ResponseEntity<byte[]> getMaterialImage(@PathVariable Long materialId) {
         return materialService.viewMaterialImage(materialId);
     }
 
     @PutMapping("/{materialId}")
+    @PreAuthorize("hasAuthority('MATERIAL_UPDATE')")
     public ResponseEntity<String> updateMaterial(@PathVariable Long materialId, @ModelAttribute MaterialDto materialDto){
         
         materialService.updateMaterial(materialId, materialDto);
@@ -82,6 +89,7 @@ public class MaterialController {
     }
 
     @DeleteMapping("/{materialId}")
+    @PreAuthorize("hasAuthority('MATERIAL_DELETE')")
     public ResponseEntity<String> deleteMaterial(@PathVariable Long materialId){
 
         materialService.deleteMaterial(materialId);
@@ -90,6 +98,7 @@ public class MaterialController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAuthority('ESTIMATION_CREATE')")
     public ResponseEntity<List<MaterialDropDownDto>> viewMaterialDropDown(@RequestParam String searchMaterial){
         
         List<MaterialDropDownDto> materialDropDownDtoList = materialService.viewMaterialDropDown(searchMaterial);
@@ -98,6 +107,7 @@ public class MaterialController {
     }
 
     @PatchMapping("/reactivate/{materialId}")
+    @PreAuthorize("hasAuthority('MATERIAL_REACTIVATE')")
     public ResponseEntity<String> reactivateMaterial(@PathVariable Long materialId){
 
         materialService.reactivateMaterial(materialId);

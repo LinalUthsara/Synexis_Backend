@@ -23,4 +23,7 @@ public interface InquiryService {
     Inquiry updateInquiry(Long inquiryId, InquiryDto inquiryDto);
 
     void deleteInquiry(Long inquiryId);
+
+    void reactivateInquiry(Long inquiryId);
+    
 }

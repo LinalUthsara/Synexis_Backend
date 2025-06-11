@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
@@ -52,14 +53,20 @@ public class Employee {
 
     private Address employeeAddress;
 
-    private String Role;
-
     @Enumerated(EnumType.STRING)
     private Status employeeStatus;
 
     @PrePersist
     protected void onCreate(){
         this.employeeStatus = Status.ACTIVE;
+        this.isPasswordChanged = false;
     }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Role role;
+
+    private String employeePassword;
+
+    private Boolean isPasswordChanged;
 
 }

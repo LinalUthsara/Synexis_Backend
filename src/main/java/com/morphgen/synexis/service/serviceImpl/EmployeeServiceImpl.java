@@ -9,9 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.morphgen.synexis.dto.EmployeeDropDownDto;
 import com.morphgen.synexis.dto.EmployeeDto;
+import com.morphgen.synexis.dto.EmployeeLoginDto;
 import com.morphgen.synexis.dto.EmployeeSideDropViewDto;
 import com.morphgen.synexis.dto.EmployeeTableViewDto;
 import com.morphgen.synexis.dto.EmployeeUpdateDto;
@@ -19,6 +23,7 @@ import com.morphgen.synexis.dto.EmployeeViewDto;
 import com.morphgen.synexis.entity.Address;
 import com.morphgen.synexis.entity.Employee;
 import com.morphgen.synexis.entity.EmployeeImage;
+import com.morphgen.synexis.entity.Role;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.EmployeeNotFoundException;
@@ -26,6 +31,7 @@ import com.morphgen.synexis.exception.ImageNotFoundException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.EmployeeRepo;
+import com.morphgen.synexis.repository.RoleRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.EmployeeService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
@@ -41,8 +47,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private ActivityLogService activityLogService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepo roleRepo;
+
     @Override
+    @Transactional
     public Employee createEmployee(EmployeeDto employeeDto) {
+
+        String defaultPassword = "Employee@123.";
 
         if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
             throw new InvalidInputException("Employee email cannot be empty!");
@@ -100,7 +115,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmployeeAddress(address);
 
-        employee.setRole(employeeDto.getRole());
+        Optional<Role> role = roleRepo.findByRoleName(employeeDto.getRoleName());
+        if (role.isEmpty()) {
+            throw new IllegalArgumentException("Role not found: " + employeeDto.getRoleName());
+        }
+
+        employee.setRole(role.get());
+        employee.setEmployeePassword(passwordEncoder.encode(defaultPassword));
 
         Employee newEmployee = employeeRepo.save(employee);
 
@@ -139,7 +160,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeTableViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
             employeeTableViewDto.setEmployeeEmail(employee.getEmployeeEmail());
             employeeTableViewDto.setEmployeeStatus(employee.getEmployeeStatus());
-            employeeTableViewDto.setRole(employee.getRole());
+            employeeTableViewDto.setRoleName(employee.getRole().getRoleName());
 
             if (employee.getEmployeeImage() != null) {
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
@@ -192,11 +213,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeViewDto.setEmployeeGender(employee.getEmployeeGender());
         employeeViewDto.setEmployeeEmail(employee.getEmployeeEmail());
         employeeViewDto.setEmployeePhoneNumber(employee.getEmployeePhoneNumber());
+
+        if (employee.getEmployeeAddress() != null){
+
         employeeViewDto.setAddressLine1(employee.getEmployeeAddress().getAddressLine1());
         employeeViewDto.setAddressLine2(employee.getEmployeeAddress().getAddressLine2());
         employeeViewDto.setCity(employee.getEmployeeAddress().getCity());
         employeeViewDto.setZipCode(employee.getEmployeeAddress().getZipCode());
-        employeeViewDto.setRole(employee.getRole());
+        }
+        
+        employeeViewDto.setRoleName(employee.getRole().getRoleName());
 
         if (employee.getEmployeeImage() != null) {
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
@@ -242,7 +268,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         .employeeGender(employee.getEmployeeGender())
         .employeeEmail(employee.getEmployeeEmail())
         .employeePhoneNumber(employee.getEmployeePhoneNumber())
-        .Role(employee.getRole())
+        .roleName(employee.getRole().getRoleName())
         .employeeImage(employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() !=null ? employee.getEmployeeImage().getEmployeeImageData().clone() : null)
         .addressLine1(employee.getEmployeeAddress().getAddressLine1())
         .addressLine2(employee.getEmployeeAddress().getAddressLine2())
@@ -305,7 +331,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmployeeAddress(address);
 
-        employee.setRole(employeeDto.getRole());
+        Optional<Role> role = roleRepo.findByRoleName(employeeDto.getRoleName());
+        if (role.isEmpty()) {
+            throw new IllegalArgumentException("Role not found: " + employeeDto.getRoleName());
+        }
+
+        employee.setRole(role.get());
 
         Employee updatedEmployee = employeeRepo.save(employee);
 
@@ -319,7 +350,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         .employeeGender(updatedEmployee.getEmployeeGender())
         .employeeEmail(updatedEmployee.getEmployeeEmail())
         .employeePhoneNumber(updatedEmployee.getEmployeePhoneNumber())
-        .Role(updatedEmployee.getRole())
+        .roleName(updatedEmployee.getRole().getRoleName())
         .employeeImage(updatedEmployee.getEmployeeImage() != null && updatedEmployee.getEmployeeImage().getEmployeeImageData() !=null ? updatedEmployee.getEmployeeImage().getEmployeeImageData().clone() : null)
         .addressLine1(updatedEmployee.getEmployeeAddress().getAddressLine1())
         .addressLine2(updatedEmployee.getEmployeeAddress().getAddressLine2())
@@ -378,6 +409,50 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.getEmployeeFirstName(), 
             Action.REACTIVATE, 
             "Reactivated Employee: " + employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+    }
+
+    @Override
+    public List<EmployeeDropDownDto> employeeDropDown(String roleName, String searchEmployee) {
+
+        Optional<Role> role = roleRepo.findByRoleName(roleName);
+        if (role.isEmpty()){
+            throw new DataIntegrityViolationException("Role: " + roleName + " does not exists!");
+        }
+        Role exisitingRole = role.get();
+
+        List<Employee> employees = employeeRepo.searchActiveEmployees(exisitingRole.getRoleId(), searchEmployee);
+
+        List<EmployeeDropDownDto> employeeDropDownDtoList = employees.stream().map(employee ->{
+
+            EmployeeDropDownDto employeeDropDownDto = new EmployeeDropDownDto();
+
+            employeeDropDownDto.setEmployeeId(employee.getEmployeeId());
+            employeeDropDownDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+
+            return employeeDropDownDto;
+        }).collect(Collectors.toList());
+
+        return employeeDropDownDtoList;
+    }
+
+    @Override
+    public EmployeeLoginDto viewEmployeeByEmail(String employeeEmail) {
+        
+        Optional<Employee> ExistingEmployee = employeeRepo.findByEmployeeEmail(employeeEmail);
+        if (ExistingEmployee.isEmpty()){
+            throw new DataIntegrityViolationException("Employee Email: " + employeeEmail + " is not found!");
+        }
+
+        Employee employee = ExistingEmployee.get();
+
+        EmployeeLoginDto employeeLoginDto = new EmployeeLoginDto();
+
+        employeeLoginDto.setEmployeeId(employee.getEmployeeId());
+        employeeLoginDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+        employeeLoginDto.setRoleName(employee.getRole().getRoleName());
+        employeeLoginDto.setIsPasswordChanged(employee.getIsPasswordChanged());
+
+        return employeeLoginDto;
     }
 
 }

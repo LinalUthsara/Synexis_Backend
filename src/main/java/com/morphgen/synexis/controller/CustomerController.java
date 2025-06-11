@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.CustomerDropDownDto;
 import com.morphgen.synexis.dto.CustomerDto;
 import com.morphgen.synexis.dto.CustomerSideDropViewDto;
 import com.morphgen.synexis.dto.CustomerTableViewDto;
@@ -39,6 +42,7 @@ public class CustomerController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CUSTOMER_CREATE')")
     public ResponseEntity<String> createCustomer(@ModelAttribute CustomerDto customerDto) throws IOException {
         
         customerService.createCustomer(customerDto);
@@ -47,6 +51,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW')")
     public ResponseEntity<List<CustomerTableViewDto>> viewCustomerTable(){
         
         List<CustomerTableViewDto> customerTableViewDtoList = customerService.viewCustomerTable();
@@ -55,6 +60,7 @@ public class CustomerController {
     }
 
     @GetMapping("/sideDrop")
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW')")
     public ResponseEntity<List<CustomerSideDropViewDto>> viewCustomerSideDrop(){
 
         List<CustomerSideDropViewDto> customerSideDropViewDtoList = customerService.viewCustomerSideDrop();
@@ -64,6 +70,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{customerId}")
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW')")
     public ResponseEntity<CustomerViewDto> viewCustomerById(@PathVariable Long customerId){
 
         CustomerViewDto customerViewDto = customerService.viewCustomerById(customerId);
@@ -72,11 +79,10 @@ public class CustomerController {
     }
 
     @GetMapping("/{customerId}/{documentType}")
-    public ResponseEntity<byte[]> getCustomerDocument(
-            @PathVariable Long customerId,
-            @PathVariable DocumentType documentType) {
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW')")
+    public ResponseEntity<byte[]> viewCustomerDocument(@PathVariable Long customerId, @PathVariable DocumentType documentType) {
 
-        File file = customerService.getCustomerFile(customerId, documentType);
+        File file = customerService.viewCustomerFile(customerId, documentType);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getFileType()))
@@ -85,6 +91,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{customerId}")
+    @PreAuthorize("hasAuthority('CUSTOMER_UPDATE')")
     public ResponseEntity<String> updateCustomer(@PathVariable Long customerId, @ModelAttribute CustomerDto customerDto){
         
         customerService.updateCustomer(customerId, customerDto);
@@ -93,6 +100,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customerId}")
+    @PreAuthorize("hasAuthority('CUSTOMER_DELETE')")
     public ResponseEntity<String> deleteCustomer(@PathVariable Long customerId){
 
         customerService.deleteCustomer(customerId);
@@ -101,10 +109,21 @@ public class CustomerController {
     }
 
     @PatchMapping("/reactivate/{customerId}")
+    @PreAuthorize("hasAuthority('CUSTOMER_REACTIVATE')")
     public ResponseEntity<String> reactivateCustomer(@PathVariable Long customerId){
 
         customerService.reactivateCustomer(customerId);
 
         return ResponseEntity.status(HttpStatus.OK).body("Customer successfully reactivated!");
     }
+   
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('INQUIRY_CREATE')")
+    public ResponseEntity<List<CustomerDropDownDto>> customerDropDown(@RequestParam String searchCustomer){
+
+        List<CustomerDropDownDto> customerDropDownDtoList = customerService.customerDropDown(searchCustomer);
+
+        return ResponseEntity.status(HttpStatus.OK).body(customerDropDownDtoList);
+    }
+
 }
