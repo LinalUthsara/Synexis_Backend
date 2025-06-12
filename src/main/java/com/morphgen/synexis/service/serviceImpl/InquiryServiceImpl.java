@@ -181,8 +181,11 @@ public class InquiryServiceImpl implements InquiryService {
         inquiryViewDto.setProjectReturnDate(inquiry.getProjectReturnDate().format(formatter));
         inquiryViewDto.setInquiryType(inquiry.getInquiryType());
         inquiryViewDto.setProjectType(inquiry.getProjectType());
+        inquiryViewDto.setCustomerId(inquiry.getCustomer().getCustomerId());
         inquiryViewDto.setCustomerName(inquiry.getCustomer().getCustomerPrefix() + " " + inquiry.getCustomer().getCustomerFirstName() + " " + inquiry.getCustomer().getCustomerLastName());
+        inquiryViewDto.setEstimatorId(inquiry.getEstimator().getEmployeeId());
         inquiryViewDto.setEstimatorName(inquiry.getEstimator().getEmployeePrefix() + " " + inquiry.getEstimator().getEmployeeFirstName() + " " + inquiry.getEstimator().getEmployeeLastName());
+        inquiryViewDto.setSalesPersonId(inquiry.getSalesPerson().getEmployeeId());
         inquiryViewDto.setSalesPersonName(inquiry.getSalesPerson().getEmployeePrefix() + " " + inquiry.getSalesPerson().getEmployeeFirstName() + " " + inquiry.getSalesPerson().getEmployeeLastName());
         inquiryViewDto.setInquiryStatus(inquiry.getInquiryStatus());
 

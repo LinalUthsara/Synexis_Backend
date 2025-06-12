@@ -24,6 +24,7 @@ import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.entity.MaterialImage;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
@@ -38,6 +39,7 @@ import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.repository.UnitRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.MaterialService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.BarcodeGenUtil;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
@@ -60,6 +62,9 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Autowired
     private UnitRepo unitRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -192,6 +197,12 @@ public class MaterialServiceImpl implements MaterialService {
             Action.CREATE, 
             "Created Material: " + newMaterial.getMaterialName());
 
+        notificationService.createNotification(
+            "New Material Created", 
+            newMaterial.getMaterialName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "MATERIAL");
+
             return newMaterial;
     }
 
@@ -212,7 +223,7 @@ public class MaterialServiceImpl implements MaterialService {
             materialTableViewDto.setQuantityInHand(material.getQuantityInHand());
             materialTableViewDto.setMaterialStatus(material.getMaterialStatus());
 
-            if (material.getMaterialImage().getMaterialImageData() != null) {
+            if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialTableViewDto.setMaterialImageUrl(imageUrl);
             }
@@ -235,7 +246,7 @@ public class MaterialServiceImpl implements MaterialService {
             materialSideDropViewDto.setMaterialName(material.getMaterialName());
             materialSideDropViewDto.setMaterialSKU(material.getMaterialSKU());
 
-            if (material.getMaterialImage().getMaterialImageData() != null) {
+            if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialSideDropViewDto.setMaterialImageUrl(imageUrl);
             }
@@ -280,7 +291,7 @@ public class MaterialServiceImpl implements MaterialService {
         materialViewDto.setMaterialStatus(material.getMaterialStatus());
         materialViewDto.setMaterialForUse(material.getMaterialForUse());
 
-        if (material.getMaterialImage().getMaterialImageData() != null) {
+        if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialViewDto.setMaterialImageUrl(imageUrl);
             }
@@ -343,7 +354,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialPartNumber(material.getMaterialPartNumber())
         .materialMake(material.getMaterialMake())
         .materialSKU(material.getMaterialSKU())
-        .materialImage(material.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
+        .materialImage(material.getMaterialImage() != null && material.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
         .materialMarketPrice(material.getMaterialMarketPrice())
         .materialPurchasePrice(material.getMaterialPurchasePrice())
         .alertQuantity(material.getAlertQuantity())
@@ -366,16 +377,31 @@ public class MaterialServiceImpl implements MaterialService {
 
         try{
             if (materialDto.getMaterialImage() != null && !materialDto.getMaterialImage().isEmpty()){
-                
-                MaterialImage materialImage = new MaterialImage();
 
-                materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
-                materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
-                materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
-                materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
-                materialImage.setMaterial(material);
+                if (material.getMaterialImage() != null || material.getMaterialImage().getMaterialImageData() != null){
 
-                material.setMaterialImage(materialImage);
+                    MaterialImage materialImage = material.getMaterialImage();
+                    materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
+                    materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
+                    materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
+                    materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
+                    materialImage.setMaterial(material);
+
+                    material.setMaterialImage(materialImage);
+                }
+                else{
+                    
+                    MaterialImage materialImage = new MaterialImage();
+
+                    materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
+                    materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
+                    materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
+                    materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
+                    materialImage.setMaterial(material);
+
+                    material.setMaterialImage(materialImage);
+
+                }
             }
             else if (material.getMaterialImage() != null){
 
@@ -445,7 +471,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialPartNumber(updatedMaterial.getMaterialPartNumber())
         .materialMake(updatedMaterial.getMaterialMake())
         .materialSKU(updatedMaterial.getMaterialSKU())
-        .materialImage(updatedMaterial.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
+        .materialImage(updatedMaterial.getMaterialImage() != null && updatedMaterial.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
         .materialMarketPrice(updatedMaterial.getMaterialMarketPrice())
         .materialPurchasePrice(updatedMaterial.getMaterialPurchasePrice())
         .alertQuantity(updatedMaterial.getAlertQuantity())
@@ -468,6 +494,12 @@ public class MaterialServiceImpl implements MaterialService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+        notificationService.createNotification(
+            "Material Updated", 
+            newMaterial.getMaterialName() + " has been updated.", 
+            NotificationType.WARNING, 
+            "MATERIAL");
+
             return updatedMaterial;
     }
 
@@ -487,6 +519,12 @@ public class MaterialServiceImpl implements MaterialService {
             material.getMaterialName(),
             Action.DELETE, 
             "Deleted Material: " + material.getMaterialName());
+
+        notificationService.createNotification(
+            "Material Deleted", 
+            material.getMaterialName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "MATERIAL");
     }
 
     @Override
@@ -533,6 +571,12 @@ public class MaterialServiceImpl implements MaterialService {
             material.getMaterialName(),
             Action.REACTIVATE, 
             "Reactivated Material: " + material.getMaterialName());
+
+        notificationService.createNotification(
+            "Material Reactivated", 
+            material.getMaterialName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "MATERIAL");
     }
 
 }

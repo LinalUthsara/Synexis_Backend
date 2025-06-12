@@ -24,6 +24,7 @@ import com.morphgen.synexis.entity.Customer;
 import com.morphgen.synexis.entity.File;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.DocumentType;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CustomerNotFoundException;
 import com.morphgen.synexis.exception.FileNotFoundException;
@@ -32,6 +33,7 @@ import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.CustomerRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CustomerService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.DocumentUrlUtil;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 
@@ -45,6 +47,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     private File createFile(MultipartFile multipartFile, DocumentType docType, Customer customer) throws IOException {
@@ -115,6 +120,12 @@ public class CustomerServiceImpl implements CustomerService {
             newCustomer.getCustomerFirstName(),
             Action.CREATE, 
             "Created Customer: " + newCustomer.getCustomerPrefix() + " " + newCustomer.getCustomerFirstName() + " " + newCustomer.getCustomerLastName());
+
+        notificationService.createNotification(
+            "New Customer Created", 
+            newCustomer.getCustomerPrefix() + " " + newCustomer.getCustomerFirstName() + " " + newCustomer.getCustomerLastName() + " has been created in the system.", 
+            NotificationType.INFO, 
+            "CUSTOMER");
             
         return newCustomer;
     }
@@ -230,10 +241,10 @@ public class CustomerServiceImpl implements CustomerService {
         .customerLastName(customer.getCustomerLastName())
         .customerEmail(customer.getCustomerEmail())
         .customerPhoneNumber(customer.getCustomerPhoneNumber())
-        .addressLine1(customer.getCustomerAddress().getAddressLine1())
-        .addressLine2(customer.getCustomerAddress().getAddressLine2())
-        .city(customer.getCustomerAddress().getCity())
-        .zipCode(customer.getCustomerAddress().getZipCode())
+        .addressLine1(customer.getCustomerAddress() != null && customer.getCustomerAddress().getAddressLine1() != null ? customer.getCustomerAddress().getAddressLine1() : null)
+        .addressLine2(customer.getCustomerAddress() != null && customer.getCustomerAddress().getAddressLine2() != null ? customer.getCustomerAddress().getAddressLine2() : null)
+        .city(customer.getCustomerAddress() != null && customer.getCustomerAddress().getCity() != null ? customer.getCustomerAddress().getCity() : null)
+        .zipCode(customer.getCustomerAddress() != null && customer.getCustomerAddress().getZipCode() != null ? customer.getCustomerAddress().getZipCode() : null)
         .customerStatus(customer.getCustomerStatus())
         .fileBRC(fileData.getOrDefault(DocumentType.BRC, null))
         .fileVAT(fileData.getOrDefault(DocumentType.VAT, null))
@@ -298,10 +309,10 @@ public class CustomerServiceImpl implements CustomerService {
         .customerLastName(updatedCustomer.getCustomerLastName())
         .customerEmail(updatedCustomer.getCustomerEmail())
         .customerPhoneNumber(updatedCustomer.getCustomerPhoneNumber())
-        .addressLine1(updatedCustomer.getCustomerAddress().getAddressLine1())
-        .addressLine2(updatedCustomer.getCustomerAddress().getAddressLine2())
-        .city(updatedCustomer.getCustomerAddress().getCity())
-        .zipCode(updatedCustomer.getCustomerAddress().getZipCode())
+        .addressLine1(updatedCustomer.getCustomerAddress() != null && updatedCustomer.getCustomerAddress().getAddressLine1() != null ? updatedCustomer.getCustomerAddress().getAddressLine1() : null)
+        .addressLine2(updatedCustomer.getCustomerAddress() != null && updatedCustomer.getCustomerAddress().getAddressLine2() != null ? updatedCustomer.getCustomerAddress().getAddressLine2() : null)
+        .city(updatedCustomer.getCustomerAddress() != null && updatedCustomer.getCustomerAddress().getCity() != null ? updatedCustomer.getCustomerAddress().getCity() : null)
+        .zipCode(updatedCustomer.getCustomerAddress() != null && updatedCustomer.getCustomerAddress().getZipCode() != null ? updatedCustomer.getCustomerAddress().getZipCode() : null)
         .customerStatus(updatedCustomer.getCustomerStatus())
         .fileBRC(newFileData.getOrDefault(DocumentType.BRC, null))
         .fileVAT(newFileData.getOrDefault(DocumentType.VAT, null))
@@ -316,6 +327,12 @@ public class CustomerServiceImpl implements CustomerService {
             updatedCustomer.getCustomerFirstName(),
             Action.UPDATE,
             changes.isBlank() ? "No changes detected" : changes);
+
+        notificationService.createNotification(
+            "Customer Updated", 
+            updatedCustomer.getCustomerPrefix() + " " + updatedCustomer.getCustomerFirstName() + " " + updatedCustomer.getCustomerLastName() + " has been updated.", 
+            NotificationType.WARNING, 
+            "CUSTOMER");
 
         return updatedCustomer;
     }
@@ -336,6 +353,12 @@ public class CustomerServiceImpl implements CustomerService {
             customer.getCustomerFirstName(), 
             Action.DELETE, 
             "Deleted Customer: " + customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
+
+        notificationService.createNotification(
+            "Customer Deleted", 
+            customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName() + " has been deleted.", 
+            NotificationType.ALERT, 
+            "CUSTOMER");
     }
 
     @Override
@@ -370,6 +393,12 @@ public class CustomerServiceImpl implements CustomerService {
             customer.getCustomerFirstName(), 
             Action.REACTIVATE, 
             "Reactivated Customer: " + customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName());
+
+        notificationService.createNotification(
+            "Customer Reactivated", 
+            customer.getCustomerPrefix() + " " + customer.getCustomerFirstName() + " " + customer.getCustomerLastName() + " has been reactivated.", 
+            NotificationType.ALERT, 
+            "CUSTOMER");
     }
 
     @Override

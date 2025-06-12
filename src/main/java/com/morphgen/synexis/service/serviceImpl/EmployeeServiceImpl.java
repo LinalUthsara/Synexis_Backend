@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,6 @@ import com.morphgen.synexis.entity.Role;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.EmployeeNotFoundException;
-import com.morphgen.synexis.exception.ImageNotFoundException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.EmployeeRepo;
@@ -138,12 +138,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public ResponseEntity<byte[]> viewEmployeeImage(Long employeeId) {
         
-        return employeeRepo.findById(employeeId)
-            .filter(employee -> employee.getEmployeeImage().getEmployeeImageData() != null)
-            .map(employee -> ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-                .body(employee.getEmployeeImage().getEmployeeImageData()))
-            .orElseThrow(() -> new ImageNotFoundException("Employee image for " + employeeId  + "is not found or has no image data!"));
+        Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
+
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            EmployeeImage employeeImage = employee.getEmployeeImage();
+
+            if (employeeImage != null && employeeImage.getEmployeeImageData() != null && employeeImage.getEmployeeImageData().length > 0) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                        .body(employeeImage.getEmployeeImageData());
+            } else {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null); // 204 No Content
+            }
+        } 
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found
+        }
     }
 
     @Override
@@ -270,10 +281,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         .employeePhoneNumber(employee.getEmployeePhoneNumber())
         .roleName(employee.getRole().getRoleName())
         .employeeImage(employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() !=null ? employee.getEmployeeImage().getEmployeeImageData().clone() : null)
-        .addressLine1(employee.getEmployeeAddress().getAddressLine1())
-        .addressLine2(employee.getEmployeeAddress().getAddressLine2())
-        .city(employee.getEmployeeAddress().getCity())
-        .zipCode(employee.getEmployeeAddress().getZipCode())
+        .addressLine1(employee.getEmployeeAddress() != null && employee.getEmployeeAddress().getAddressLine1() != null ? employee.getEmployeeAddress().getAddressLine1() : null)
+        .addressLine2(employee.getEmployeeAddress() != null &&  employee.getEmployeeAddress().getAddressLine2() != null ? employee.getEmployeeAddress().getAddressLine2(): null)
+        .city(employee.getEmployeeAddress() != null && employee.getEmployeeAddress().getCity() != null ? employee.getEmployeeAddress().getCity() : null)
+        .zipCode(employee.getEmployeeAddress() != null && employee.getEmployeeAddress().getZipCode() != null ? employee.getEmployeeAddress().getZipCode() : null)
         .employeeStatus(employee.getEmployeeStatus())
         .build();
 
@@ -352,10 +363,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         .employeePhoneNumber(updatedEmployee.getEmployeePhoneNumber())
         .roleName(updatedEmployee.getRole().getRoleName())
         .employeeImage(updatedEmployee.getEmployeeImage() != null && updatedEmployee.getEmployeeImage().getEmployeeImageData() !=null ? updatedEmployee.getEmployeeImage().getEmployeeImageData().clone() : null)
-        .addressLine1(updatedEmployee.getEmployeeAddress().getAddressLine1())
-        .addressLine2(updatedEmployee.getEmployeeAddress().getAddressLine2())
-        .city(updatedEmployee.getEmployeeAddress().getCity())
-        .zipCode(updatedEmployee.getEmployeeAddress().getZipCode())
+        .addressLine1(updatedEmployee.getEmployeeAddress() != null && updatedEmployee.getEmployeeAddress().getAddressLine1() != null ? updatedEmployee.getEmployeeAddress().getAddressLine1() : null)
+        .addressLine2(updatedEmployee.getEmployeeAddress() != null &&  updatedEmployee.getEmployeeAddress().getAddressLine2() != null ? updatedEmployee.getEmployeeAddress().getAddressLine2(): null)
+        .city(updatedEmployee.getEmployeeAddress() != null && updatedEmployee.getEmployeeAddress().getCity() != null ? updatedEmployee.getEmployeeAddress().getCity() : null)
+        .zipCode(updatedEmployee.getEmployeeAddress() != null && updatedEmployee.getEmployeeAddress().getZipCode() != null ? updatedEmployee.getEmployeeAddress().getZipCode() : null)
         .employeeStatus(updatedEmployee.getEmployeeStatus())
         .build();
 

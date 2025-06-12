@@ -24,6 +24,7 @@ import com.morphgen.synexis.entity.Brand;
 import com.morphgen.synexis.entity.BrandImage;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
 import com.morphgen.synexis.exception.ImageNotFoundException;
@@ -33,6 +34,7 @@ import com.morphgen.synexis.repository.BrandRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.BrandService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
 
@@ -48,6 +50,9 @@ public class BrandServiceImpl implements BrandService {
 
     @Autowired
     private MaterialRepo materialRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -115,6 +120,12 @@ public class BrandServiceImpl implements BrandService {
             newBrand.getBrandName(),
             Action.CREATE, 
             "Created Brand: " + newBrand.getBrandName());
+
+        notificationService.createNotification(
+            "New Brand Created", 
+            newBrand.getBrandName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "BRAND");
 
         return newBrand;
     }
@@ -322,6 +333,12 @@ public class BrandServiceImpl implements BrandService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+        notificationService.createNotification(
+            "Brand Updated", 
+            updatedBrand.getBrandName() + " has been updated.", 
+            NotificationType.WARNING, 
+            "BRAND");
+
         return updatedBrand;
 
     }
@@ -342,6 +359,13 @@ public class BrandServiceImpl implements BrandService {
             brand.getBrandName(), 
             Action.DELETE, 
             "Deleted Brand: " + brand.getBrandName());
+
+        notificationService.createNotification(
+            "Brand Deleted", 
+            brand.getBrandName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "BRAND");
+
     }
 
     @Override
@@ -382,6 +406,12 @@ public class BrandServiceImpl implements BrandService {
             brand.getBrandName(), 
             Action.REACTIVATE, 
             "Reactivated Brand: " + brand.getBrandName());
+
+        notificationService.createNotification(
+            "Brand Reactivated", 
+            brand.getBrandName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "BRAND");
     }
 
 }

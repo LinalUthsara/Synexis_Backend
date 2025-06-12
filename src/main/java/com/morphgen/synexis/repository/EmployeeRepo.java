@@ -36,4 +36,7 @@ public interface EmployeeRepo extends JpaRepository<Employee, Long> {
         OR LOWER(e.employeePhoneNumber) LIKE LOWER(CONCAT('% ', :searchEmployee, '%'))
     )""")
     List<Employee> searchActiveEmployees(@Param("roleId") Long roleId, @Param("searchEmployee") String searchEmployee);
+
+    @Query("SELECT DISTINCT e FROM Employee e JOIN e.role r JOIN r.privileges p WHERE p.privilegeName IN :privileges")
+    List<Employee> findByPrivileges(List<String> privileges);
 }

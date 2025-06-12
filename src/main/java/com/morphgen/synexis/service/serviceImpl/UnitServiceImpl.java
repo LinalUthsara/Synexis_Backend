@@ -20,12 +20,14 @@ import com.morphgen.synexis.dto.UnitViewDto;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.exception.UnitNotFoundException;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.repository.UnitRepo;
 import com.morphgen.synexis.service.ActivityLogService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.service.UnitService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 
@@ -41,6 +43,9 @@ public class UnitServiceImpl implements UnitService {
 
     @Autowired
     private MaterialRepo materialRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -109,6 +114,12 @@ public class UnitServiceImpl implements UnitService {
             newUnit.getUnitName(), 
             Action.CREATE, 
             "Created Unit: " + newUnit.getUnitName());
+
+        notificationService.createNotification(
+            "New Unit Created", 
+            newUnit.getUnitName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "UNIT");
 
             return newUnit;
     }
@@ -267,6 +278,12 @@ public class UnitServiceImpl implements UnitService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+        notificationService.createNotification(
+            "Unit Updated", 
+            updatedUnit.getUnitName() + " has been updated.", 
+            NotificationType.WARNING, 
+            "UNIT");
+
             return updatedUnit;
 
     }
@@ -287,6 +304,12 @@ public class UnitServiceImpl implements UnitService {
             unit.getUnitName(), 
             Action.CREATE, 
             "Deleted Unit: " + unit.getUnitName());
+
+        notificationService.createNotification(
+            "Unit Deleted", 
+            unit.getUnitName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "UNIT");
     }
 
     @Override
@@ -347,6 +370,12 @@ public class UnitServiceImpl implements UnitService {
             unit.getUnitName(), 
             Action.REACTIVATE, 
             "Reactivated Unit: " + unit.getUnitName());
+
+        notificationService.createNotification(
+            "Unit Reactivated", 
+            unit.getUnitName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "UNIT");
     }
 
 }

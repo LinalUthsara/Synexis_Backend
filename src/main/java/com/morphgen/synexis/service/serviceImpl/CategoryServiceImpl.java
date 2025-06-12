@@ -20,6 +20,7 @@ import com.morphgen.synexis.dto.ParentCategoryDropDownDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
 import com.morphgen.synexis.exception.InvalidInputException;
@@ -27,6 +28,7 @@ import com.morphgen.synexis.repository.CategoryRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CategoryService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
 
@@ -42,6 +44,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private MaterialRepo materialRepo;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -85,6 +90,12 @@ public class CategoryServiceImpl implements CategoryService {
             newCategory.getCategoryName(), 
             Action.CREATE, 
             "Created Category: " + newCategory.getCategoryName());
+
+        notificationService.createNotification(
+            "New Category Created", 
+            category.getCategoryName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "CATEGORY");
 
         return newCategory;
     }
@@ -245,6 +256,12 @@ public class CategoryServiceImpl implements CategoryService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+            notificationService.createNotification(
+            "Category Updated", 
+            category.getCategoryName() + " has been updated.", 
+            NotificationType.WARNING, 
+            "CATEGORY");
+
             return updatedCategory;
     }
 
@@ -264,6 +281,12 @@ public class CategoryServiceImpl implements CategoryService {
             category.getCategoryName(), 
             Action.DELETE, 
             "Deleted Category: " + category.getCategoryName());
+
+        notificationService.createNotification(
+            "Category Deleted", 
+            category.getCategoryName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "CATEGORY");
     }
 
     @Override
@@ -322,6 +345,13 @@ public class CategoryServiceImpl implements CategoryService {
             category.getCategoryName(), 
             Action.REACTIVATE, 
             "Reactivated Category: " + category.getCategoryName());
+
+        notificationService.createNotification(
+            "Category Reactivated", 
+            category.getCategoryName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "CATEGORY");
+
     }
 
 }
