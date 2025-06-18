@@ -92,7 +92,12 @@ public class InitService {
                 admin.setEmployeeNIC("ADMIN123456789");
                 admin.setEmployeeEmail(adminEmail);
 
-                admin.setRoleName(roleName);
+                Optional<Role> newRole = roleRepo.findByRoleName(roleName);
+                if (existingRole.isPresent()){
+                    Role role = newRole.get();
+
+                    admin.setRoleId(role.getRoleId());
+                }
 
                 employeeService.createEmployee(admin);
             }

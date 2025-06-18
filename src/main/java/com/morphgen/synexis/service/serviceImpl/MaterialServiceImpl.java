@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.morphgen.synexis.dto.MaterialDropDownDto;
 import com.morphgen.synexis.dto.MaterialDto;
@@ -24,10 +26,10 @@ import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.entity.MaterialImage;
 import com.morphgen.synexis.entity.Unit;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.BrandNotFoundException;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
-import com.morphgen.synexis.exception.ImageNotFoundException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.exception.MaterialNotFoundException;
@@ -38,6 +40,7 @@ import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.repository.UnitRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.MaterialService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.BarcodeGenUtil;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
@@ -61,23 +64,31 @@ public class MaterialServiceImpl implements MaterialService {
     @Autowired
     private UnitRepo unitRepo;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     @Transactional
     public Material createMaterial(MaterialDto materialDto) {
 
         if (materialDto.getMaterialName() == null || materialDto.getMaterialName().isEmpty()){
+
             throw new InvalidInputException("Material name cannot be empty!");
         }
         else if (materialDto.getMaterialSKU() == null || materialDto.getMaterialSKU().isEmpty()){
+
             throw new InvalidInputException("Stock Keeping unit cannot be empty!");
         }
         else if (materialDto.getAlertQuantity() == null){
+
             throw new InvalidInputException("Alert quantity cannot be empty!");
         }
         else if (materialDto.getMaterialType() == null){
+
             throw new InvalidInputException("Material type cannot be empty!");
         }
         else if (materialDto.getMaterialInventoryType() == null){
+
             throw new InvalidInputException("Inventory Type cannot be empty!");
         }
         
@@ -110,6 +121,15 @@ public class MaterialServiceImpl implements MaterialService {
             }
         }
 
+        if (materialDto.getMaterialPartNumber() != null && !materialDto.getMaterialPartNumber().isEmpty()){
+
+            Optional<Material> existingMaterialPartNumber = materialRepo.findByMaterialPartNumber(materialDto.getMaterialPartNumber());
+            if (existingMaterialPartNumber.isPresent()){
+
+                throw new DataIntegrityViolationException("A Material with the part number " + materialDto.getMaterialPartNumber() + " already exists!");
+            }
+        }
+
         Material material = new Material();
 
         material.setMaterialName(materialDto.getMaterialName());
@@ -119,7 +139,7 @@ public class MaterialServiceImpl implements MaterialService {
         material.setMaterialSKU(materialDto.getMaterialSKU());
 
         try{
-            if(materialDto.getMaterialImage() != null && !materialDto.getMaterialImage().isEmpty()){
+            if (materialDto.getMaterialImage() != null && !materialDto.getMaterialImage().isEmpty()){
                 
                 MaterialImage materialImage = new MaterialImage();
 
@@ -132,7 +152,7 @@ public class MaterialServiceImpl implements MaterialService {
                 material.setMaterialImage(materialImage);
             }
         }
-        catch(IOException e){
+        catch (IOException e){
             throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
@@ -144,6 +164,7 @@ public class MaterialServiceImpl implements MaterialService {
         material.setMaterialInventoryType(materialDto.getMaterialInventoryType());
 
         if (materialDto.getBrandId() != null){
+
             Brand brand = brandRepo.findById(materialDto.getBrandId())
             .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + materialDto.getBrandId() + " is not found!"));
 
@@ -151,6 +172,7 @@ public class MaterialServiceImpl implements MaterialService {
         }
 
         if (materialDto.getCategoryId() != null){
+
             Category category = categoryRepo.findById(materialDto.getCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + materialDto.getCategoryId() + " is not found!"));
 
@@ -158,6 +180,7 @@ public class MaterialServiceImpl implements MaterialService {
         }
 
         if (materialDto.getSubCategoryId() != null){
+
             Category subCategory = categoryRepo.findById(materialDto.getSubCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Sub - category ID: " + materialDto.getSubCategoryId() + " is not found!"));
 
@@ -165,6 +188,7 @@ public class MaterialServiceImpl implements MaterialService {
         }        
 
         if (materialDto.getBaseUnitId() != null){
+
             Unit baseUnit = unitRepo.findById(materialDto.getBaseUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + materialDto.getBaseUnitId() + " is not found!"));
 
@@ -172,6 +196,7 @@ public class MaterialServiceImpl implements MaterialService {
         }  
 
         if (materialDto.getOtherUnitId() != null){
+
             Unit otherUnit = unitRepo.findById(materialDto.getOtherUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + materialDto.getOtherUnitId() + " is not found!"));
 
@@ -191,6 +216,12 @@ public class MaterialServiceImpl implements MaterialService {
             newMaterial.getMaterialName(),
             Action.CREATE, 
             "Created Material: " + newMaterial.getMaterialName());
+
+        notificationService.createNotification(
+            "New Material Created", 
+            newMaterial.getMaterialName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "MATERIAL");
 
             return newMaterial;
     }
@@ -212,12 +243,14 @@ public class MaterialServiceImpl implements MaterialService {
             materialTableViewDto.setQuantityInHand(material.getQuantityInHand());
             materialTableViewDto.setMaterialStatus(material.getMaterialStatus());
 
-            if (material.getMaterialImage().getMaterialImageData() != null) {
+            if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialTableViewDto.setMaterialImageUrl(imageUrl);
             }
 
             return materialTableViewDto;
+
         }).collect(Collectors.toList());
 
         return materialTableViewDtoList;
@@ -235,12 +268,14 @@ public class MaterialServiceImpl implements MaterialService {
             materialSideDropViewDto.setMaterialName(material.getMaterialName());
             materialSideDropViewDto.setMaterialSKU(material.getMaterialSKU());
 
-            if (material.getMaterialImage().getMaterialImageData() != null) {
+            if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialSideDropViewDto.setMaterialImageUrl(imageUrl);
             }
 
             return materialSideDropViewDto;
+
         }).collect(Collectors.toList());
 
         return materialSideDropViewDtoList;
@@ -280,7 +315,8 @@ public class MaterialServiceImpl implements MaterialService {
         materialViewDto.setMaterialStatus(material.getMaterialStatus());
         materialViewDto.setMaterialForUse(material.getMaterialForUse());
 
-        if (material.getMaterialImage().getMaterialImageData() != null) {
+        if (material.getMaterialImage() !=null && material.getMaterialImage().getMaterialImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialViewDto.setMaterialImageUrl(imageUrl);
             }
@@ -291,12 +327,30 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     public ResponseEntity<byte[]> viewMaterialImage(Long materialId) {
-        return materialRepo.findById(materialId)
-            .filter(material -> material.getMaterialImage().getMaterialImageData() != null)
-            .map(material -> ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-                .body(material.getMaterialImage().getMaterialImageData()))
-            .orElseThrow(() -> new ImageNotFoundException("Brand image for " + materialId  + "is not found or has no image data!"));
+        
+        Optional<Material> optionalMaterial = materialRepo.findById(materialId);
+
+        if (optionalMaterial.isPresent()) {
+
+            Material material = optionalMaterial.get();
+            MaterialImage materialImage = material.getMaterialImage();
+
+            if (materialImage != null && materialImage.getMaterialImageData() != null && materialImage.getMaterialImageData().length > 0) {
+
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                        .body(materialImage.getMaterialImageData());
+            } 
+            else {
+
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            }
+        } 
+        else {
+
+            throw new MaterialNotFoundException("Material ID: " + materialId + " is not found!");
+        }
+
     }
 
     @Override
@@ -307,32 +361,50 @@ public class MaterialServiceImpl implements MaterialService {
         .orElseThrow(() -> new MaterialNotFoundException("Material ID: " + materialId + " is not found!"));
 
         if (materialDto.getMaterialName() == null || materialDto.getMaterialName().isEmpty()){
+
             throw new InvalidInputException("Material name cannot be empty!");
         }
         else if (materialDto.getMaterialSKU() == null || materialDto.getMaterialSKU().isEmpty()){
+
             throw new InvalidInputException("Stock Keeping unit cannot be empty!");
         }
         else if (materialDto.getAlertQuantity() == null){
+
             throw new InvalidInputException("Alert quantity cannot be empty!");
         }
         else if (materialDto.getMaterialType() == null){
+
             throw new InvalidInputException("Material type cannot be empty!");
         }
         else if (materialDto.getMaterialInventoryType() == null){
+
             throw new InvalidInputException("Inventory Type cannot be empty!");
         }
 
         if (!material.getMaterialName().equalsIgnoreCase(materialDto.getMaterialName())) {
+
             Optional<Material> existingMaterialName = materialRepo.findByMaterialName(materialDto.getMaterialName());
             if (existingMaterialName.isPresent()) {
+
                 throw new DataIntegrityViolationException("A Material with the name " + materialDto.getMaterialName() + " already exists!");
             }
         }
 
         if (!material.getMaterialSKU().equalsIgnoreCase(materialDto.getMaterialSKU())) {
+
             Optional<Material> existingMaterialSKU = materialRepo.findByMaterialSKU(materialDto.getMaterialSKU());
             if (existingMaterialSKU.isPresent()) {
+
                 throw new DataIntegrityViolationException("A Material with the SKU " + materialDto.getMaterialSKU() + " already exists!");
+            }
+        }
+
+        if (StringUtils.hasText(materialDto.getMaterialPartNumber()) && !materialDto.getMaterialPartNumber().equalsIgnoreCase(material.getMaterialPartNumber())){
+
+            Optional<Material> existingMaterialPartNumber = materialRepo.findByMaterialPartNumber(materialDto.getMaterialPartNumber());
+            if (existingMaterialPartNumber.isPresent()){
+
+                throw new DataIntegrityViolationException("A Material with the part number " + materialDto.getMaterialPartNumber() + " already exists!");
             }
         }
 
@@ -343,7 +415,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialPartNumber(material.getMaterialPartNumber())
         .materialMake(material.getMaterialMake())
         .materialSKU(material.getMaterialSKU())
-        .materialImage(material.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
+        .materialImage(material.getMaterialImage() != null && material.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
         .materialMarketPrice(material.getMaterialMarketPrice())
         .materialPurchasePrice(material.getMaterialPurchasePrice())
         .alertQuantity(material.getAlertQuantity())
@@ -366,16 +438,31 @@ public class MaterialServiceImpl implements MaterialService {
 
         try{
             if (materialDto.getMaterialImage() != null && !materialDto.getMaterialImage().isEmpty()){
-                
-                MaterialImage materialImage = new MaterialImage();
 
-                materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
-                materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
-                materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
-                materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
-                materialImage.setMaterial(material);
+                if (material.getMaterialImage() != null || material.getMaterialImage().getMaterialImageData() != null){
 
-                material.setMaterialImage(materialImage);
+                    MaterialImage materialImage = material.getMaterialImage();
+                    materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
+                    materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
+                    materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
+                    materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
+                    materialImage.setMaterial(material);
+
+                    material.setMaterialImage(materialImage);
+                }
+                else{
+                    
+                    MaterialImage materialImage = new MaterialImage();
+
+                    materialImage.setMaterialImageName(materialDto.getMaterialImage().getOriginalFilename());
+                    materialImage.setMaterialImageType(materialDto.getMaterialImage().getContentType());
+                    materialImage.setMaterialImageSize(materialDto.getMaterialImage().getSize());
+                    materialImage.setMaterialImageData(materialDto.getMaterialImage().getBytes());
+                    materialImage.setMaterial(material);
+
+                    material.setMaterialImage(materialImage);
+
+                }
             }
             else if (material.getMaterialImage() != null){
 
@@ -390,7 +477,7 @@ public class MaterialServiceImpl implements MaterialService {
                 material.setMaterialImage(null);
             }
         }
-        catch(IOException e){
+        catch (IOException e){
             throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
@@ -402,6 +489,7 @@ public class MaterialServiceImpl implements MaterialService {
         material.setMaterialInventoryType(materialDto.getMaterialInventoryType());
 
         if (materialDto.getBrandId() != null){
+
             Brand brand = brandRepo.findById(materialDto.getBrandId())
             .orElseThrow(() -> new BrandNotFoundException("Brand ID: " + materialDto.getBrandId() + " is not found!"));
 
@@ -409,6 +497,7 @@ public class MaterialServiceImpl implements MaterialService {
         }
 
         if (materialDto.getCategoryId() != null){
+
             Category category = categoryRepo.findById(materialDto.getCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + materialDto.getCategoryId() + " is not found!"));
 
@@ -416,6 +505,7 @@ public class MaterialServiceImpl implements MaterialService {
         }
 
         if (materialDto.getSubCategoryId() != null){
+
             Category subCategory = categoryRepo.findById(materialDto.getSubCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Sub - category ID: " + materialDto.getSubCategoryId() + " is not found!"));
 
@@ -423,6 +513,7 @@ public class MaterialServiceImpl implements MaterialService {
         }        
 
         if (materialDto.getBaseUnitId() != null){
+
             Unit baseUnit = unitRepo.findById(materialDto.getBaseUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + materialDto.getBaseUnitId() + " is not found!"));
 
@@ -430,6 +521,7 @@ public class MaterialServiceImpl implements MaterialService {
         }  
 
         if (materialDto.getOtherUnitId() != null){
+
             Unit otherUnit = unitRepo.findById(materialDto.getOtherUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + materialDto.getOtherUnitId() + " is not found!"));
 
@@ -445,7 +537,7 @@ public class MaterialServiceImpl implements MaterialService {
         .materialPartNumber(updatedMaterial.getMaterialPartNumber())
         .materialMake(updatedMaterial.getMaterialMake())
         .materialSKU(updatedMaterial.getMaterialSKU())
-        .materialImage(updatedMaterial.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
+        .materialImage(updatedMaterial.getMaterialImage() != null && updatedMaterial.getMaterialImage().getMaterialImageData() != null ? material.getMaterialImage().getMaterialImageData().clone() : null)
         .materialMarketPrice(updatedMaterial.getMaterialMarketPrice())
         .materialPurchasePrice(updatedMaterial.getMaterialPurchasePrice())
         .alertQuantity(updatedMaterial.getAlertQuantity())
@@ -468,6 +560,15 @@ public class MaterialServiceImpl implements MaterialService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+        if (!changes.isBlank()){
+
+            notificationService.createNotification(
+                "Material Updated", 
+                newMaterial.getMaterialName() + " has been updated.", 
+                NotificationType.WARNING, 
+                "MATERIAL");
+        }
+        
             return updatedMaterial;
     }
 
@@ -487,6 +588,12 @@ public class MaterialServiceImpl implements MaterialService {
             material.getMaterialName(),
             Action.DELETE, 
             "Deleted Material: " + material.getMaterialName());
+
+        notificationService.createNotification(
+            "Material Deleted", 
+            material.getMaterialName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "MATERIAL");
     }
 
     @Override
@@ -508,6 +615,7 @@ public class MaterialServiceImpl implements MaterialService {
             materialDropDownDto.setMaterialCountry(material.getBrand().getBrandCountry());
 
             return materialDropDownDto;
+
         }).collect(Collectors.toList());
 
         return materialDropDownDtoList;
@@ -520,6 +628,7 @@ public class MaterialServiceImpl implements MaterialService {
         .orElseThrow(() -> new MaterialNotFoundException("Material ID: " + materialId + " is not found!"));
 
         if (material.getMaterialStatus() == Status.ACTIVE){
+
             throw new DataIntegrityViolationException("Material is already active!");
         }
 
@@ -533,6 +642,12 @@ public class MaterialServiceImpl implements MaterialService {
             material.getMaterialName(),
             Action.REACTIVATE, 
             "Reactivated Material: " + material.getMaterialName());
+
+        notificationService.createNotification(
+            "Material Reactivated", 
+            material.getMaterialName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "MATERIAL");
     }
 
 }

@@ -20,6 +20,7 @@ import com.morphgen.synexis.dto.ParentCategoryDropDownDto;
 import com.morphgen.synexis.entity.Category;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
+import com.morphgen.synexis.enums.NotificationType;
 import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CategoryNotFoundException;
 import com.morphgen.synexis.exception.InvalidInputException;
@@ -27,6 +28,7 @@ import com.morphgen.synexis.repository.CategoryRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CategoryService;
+import com.morphgen.synexis.service.NotificationService;
 import com.morphgen.synexis.utils.EntityDiffUtil;
 import com.morphgen.synexis.utils.ImageUrlUtil;
 
@@ -43,16 +45,20 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private MaterialRepo materialRepo;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     @Transactional
     public Category createCategory(CategoryDto categoryDto) {
 
-        if(categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+        if (categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+
             throw new InvalidInputException("Category name cannot be empty!");
         }
 
         Optional<Category> existingCategory = categoryRepo.findByCategoryName(categoryDto.getCategoryName());
-        if(existingCategory.isPresent()){
+        if (existingCategory.isPresent()){
 
             Category activeCategory = existingCategory.get();
             
@@ -72,6 +78,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setCategoryDescription(categoryDto.getCategoryDescription());
         
         if (categoryDto.getParentCategoryId() != null) {
+
             Category parentCategory = categoryRepo.findById(categoryDto.getParentCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryDto.getParentCategoryId() + " is not found!"));
             category.setParentCategory(parentCategory);
@@ -85,6 +92,12 @@ public class CategoryServiceImpl implements CategoryService {
             newCategory.getCategoryName(), 
             Action.CREATE, 
             "Created Category: " + newCategory.getCategoryName());
+
+        notificationService.createNotification(
+            "New Category Created", 
+            category.getCategoryName() + " has been created in the inventory.", 
+            NotificationType.INFO, 
+            "CATEGORY");
 
         return newCategory;
     }
@@ -112,6 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryTableViewDto.setCategoryStatus(category.getCategoryStatus());
 
             return categoryTableViewDto;
+
         }).collect(Collectors.toList());
 
         return categoryTableViewDtoList;
@@ -133,6 +147,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryViewDto.setCategoryStatus(category.getCategoryStatus());
 
         if (category.getParentCategory() != null) {
+
             categoryViewDto.setParentCategoryId(category.getParentCategory().getCategoryId());
             categoryViewDto.setParentCategoryName(category.getParentCategory().getCategoryName());
         }
@@ -150,11 +165,13 @@ public class CategoryServiceImpl implements CategoryService {
             materialTableViewDto.setMaterialStatus(material.getMaterialStatus());
 
             if (material.getMaterialImage() != null) {
+
                 String imageUrl = ImageUrlUtil.constructMaterialImageUrl(material.getMaterialId());
                 materialTableViewDto.setMaterialImageUrl(imageUrl);
             }
 
             return materialTableViewDto;
+
         }).collect(Collectors.toList());
 
         categoryViewDto.setMaterialTableViewDtoList(materialTableViewDtoList);
@@ -183,6 +200,7 @@ public class CategoryServiceImpl implements CategoryService {
             categorySideDropViewDto.setCategoryId(category.getCategoryId());
 
             return categorySideDropViewDto;
+
         }).collect(Collectors.toList());
 
         return categorySideDropViewDtoList;
@@ -195,13 +213,16 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepo.findById(categoryId)
         .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
 
-        if(categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+        if (categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()){
+
             throw new InvalidInputException("Category name cannot be empty!");
         }
 
         if (!category.getCategoryName().equalsIgnoreCase(categoryDto.getCategoryName())) {
+
          Optional<Category> oldCategory = categoryRepo.findByCategoryName(categoryDto.getCategoryName());
             if (oldCategory.isPresent()) {
+
                 throw new DataIntegrityViolationException("A Category with the name " + categoryDto.getCategoryName() + " already exists!");
             }
         }
@@ -218,11 +239,13 @@ public class CategoryServiceImpl implements CategoryService {
         category.setCategoryDescription(categoryDto.getCategoryDescription());
 
         if (categoryDto.getParentCategoryId() != null) {
+
             Category parentCategory = categoryRepo.findById(categoryDto.getParentCategoryId())
             .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryDto.getParentCategoryId() + " is not found!"));
             category.setParentCategory(parentCategory);
         }
         else{
+
             category.setParentCategory(null);
         }
 
@@ -245,6 +268,15 @@ public class CategoryServiceImpl implements CategoryService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
+        if (!changes.isBlank()){
+
+            notificationService.createNotification(
+                "Category Updated", 
+                category.getCategoryName() + " has been updated.", 
+                NotificationType.WARNING, 
+                "CATEGORY");
+        }
+            
             return updatedCategory;
     }
 
@@ -264,6 +296,12 @@ public class CategoryServiceImpl implements CategoryService {
             category.getCategoryName(), 
             Action.DELETE, 
             "Deleted Category: " + category.getCategoryName());
+
+        notificationService.createNotification(
+            "Category Deleted", 
+            category.getCategoryName() + " has been deleted from the inventory.", 
+            NotificationType.ALERT, 
+            "CATEGORY");
     }
 
     @Override
@@ -297,6 +335,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryDropDownDto.setCategoryName(category.getCategoryName());
 
             return categoryDropDownDto;
+
         }).collect(Collectors.toList());
 
         return categoryDropDownDtoList;
@@ -309,6 +348,7 @@ public class CategoryServiceImpl implements CategoryService {
         .orElseThrow(() -> new CategoryNotFoundException("Category ID: " + categoryId + " is not found!"));
 
         if (category.getCategoryStatus() == Status.ACTIVE){
+            
             throw new DataIntegrityViolationException("Category is already active!");
         }
 
@@ -322,6 +362,13 @@ public class CategoryServiceImpl implements CategoryService {
             category.getCategoryName(), 
             Action.REACTIVATE, 
             "Reactivated Category: " + category.getCategoryName());
+
+        notificationService.createNotification(
+            "Category Reactivated", 
+            category.getCategoryName() + " has been reactivated.", 
+            NotificationType.INFO, 
+            "CATEGORY");
+
     }
 
 }

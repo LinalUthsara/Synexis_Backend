@@ -22,9 +22,15 @@ public class InquiryViewDto {
 
     private ProjectType projectType;
 
+    private Long customerId;
+
     private String customerName;
 
+    private Long estimatorId;
+
     private String estimatorName;
+
+    private Long salesPersonId;
 
     private String salesPersonName;
 

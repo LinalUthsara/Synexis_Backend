@@ -57,9 +57,9 @@ public class JobController {
 
     @GetMapping("/attachment/{attachmentId}")
     @PreAuthorize("hasAuthority('JOB_VIEW')")
-    public ResponseEntity<byte[]> viewJobAttachment(@PathVariable Long attachmentId) {
+    public ResponseEntity<byte[]> viewJobAttachment(@PathVariable Long attachmentId, @RequestParam(defaultValue = "inline") String disposition) {
         
-        return jobService.viewAttachment(attachmentId);
+        return jobService.viewAttachment(attachmentId, disposition);
     }
 
     @GetMapping("/sideDrop")
