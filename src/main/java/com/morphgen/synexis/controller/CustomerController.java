@@ -80,14 +80,30 @@ public class CustomerController {
 
     @GetMapping("/{customerId}/{documentType}")
     @PreAuthorize("hasAuthority('CUSTOMER_VIEW')")
-    public ResponseEntity<byte[]> viewCustomerDocument(@PathVariable Long customerId, @PathVariable DocumentType documentType) {
+    public ResponseEntity<byte[]> viewCustomerDocument(@PathVariable Long customerId, @PathVariable DocumentType documentType, @RequestParam(defaultValue = "inline") String disposition) {
 
         File file = customerService.viewCustomerFile(customerId, documentType);
+        String mimeType = file.getFileType() != null ? file.getFileType() : "application/octet-stream";
+    
+        String originalFilename = file.getFilename();
+    
+        String contentDisposition;
+        try {
 
+            String encodedFilename = java.net.URLEncoder.encode(originalFilename, "UTF-8")
+                                .replace("+", "%20");
+        
+        contentDisposition = disposition + "; filename=\"" + originalFilename + "\"; filename*=UTF-8''" + encodedFilename;
+        } catch (Exception e) {
+
+            contentDisposition = disposition + "; filename=\"" + originalFilename + "\"";
+        }
+        
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getFileType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
-                .body(file.getFileData());
+            .contentType(MediaType.parseMediaType(mimeType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+            .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Disposition")
+            .body(file.getFileData());
     }
 
     @PutMapping("/{customerId}")

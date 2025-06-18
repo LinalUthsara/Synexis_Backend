@@ -105,4 +105,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + fileNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = NotificationNotFoundException.class)
+    public ResponseEntity<String> NotificationNotFoundExceptionHandler (NotificationNotFoundException notificationNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + notificationNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = RoleNotFoundException.class)
+    public ResponseEntity<String> RoleNotFoundExceptionHandler (RoleNotFoundException roleNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + roleNotFoundException.getMessage());
+    }
+
 }

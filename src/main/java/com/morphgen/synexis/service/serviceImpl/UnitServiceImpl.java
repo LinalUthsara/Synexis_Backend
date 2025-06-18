@@ -51,15 +51,17 @@ public class UnitServiceImpl implements UnitService {
     @Transactional
     public Unit createUnit(UnitDto unitDto) {
 
-        if(unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+        if (unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+
             throw new InvalidInputException("Unit name cannot be empty!");
         }
-        else if(unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+        else if (unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+
             throw new InvalidInputException("Unit short name cannot be empty!");
         }
         
         Optional<Unit> existingUnitByName = unitRepo.findByUnitName(unitDto.getUnitName());
-        if(existingUnitByName.isPresent()){
+        if (existingUnitByName.isPresent()){
 
             Unit activeUnitN = existingUnitByName.get();
 
@@ -74,7 +76,7 @@ public class UnitServiceImpl implements UnitService {
         }
 
         Optional<Unit> existingUnitByShortName = unitRepo.findByUnitShortName(unitDto.getUnitShortName());
-        if(existingUnitByShortName.isPresent()){
+        if (existingUnitByShortName.isPresent()){
 
             Unit activeUnitSN = existingUnitByShortName.get();
 
@@ -94,7 +96,8 @@ public class UnitServiceImpl implements UnitService {
         unit.setUnitShortName(unitDto.getUnitShortName());
         unit.setUnitAllowDecimal(unitDto.getUnitAllowDecimal());
 
-        if(unitDto.getBaseUnitId() != null){
+        if (unitDto.getBaseUnitId() != null){
+
             Unit baseUnit = unitRepo.findById(unitDto.getBaseUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Base Unit ID: " + unitDto.getBaseUnitId() + " is not found!"));
 
@@ -102,6 +105,7 @@ public class UnitServiceImpl implements UnitService {
             unit.setUnitConversionFactor(unitDto.getUnitConversionFactor());
         }
         else{
+
             unit.setBaseUnit(null);
             unit.setUnitConversionFactor(null);
         }
@@ -143,6 +147,7 @@ public class UnitServiceImpl implements UnitService {
             unitTableViewDto.setMaterialCount(materialCount);
 
             return unitTableViewDto;
+
         }).collect(Collectors.toList());
 
         return unitTableViewDtoList;
@@ -162,6 +167,7 @@ public class UnitServiceImpl implements UnitService {
             unitSideDropViewDto.setUnitShortName(unit.getUnitShortName());
 
             return unitSideDropViewDto;
+
         }).collect(Collectors.toList());
 
         return unitSideDropViewDtoList;
@@ -184,6 +190,7 @@ public class UnitServiceImpl implements UnitService {
         unitViewDto.setUnitStatus(unit.getUnitStatus());
         
         if (unit.getBaseUnit() != null){
+
             unitViewDto.setBaseUnitId(unit.getBaseUnit().getUnitId());
             unitViewDto.setBaseUnitName(unit.getBaseUnit().getUnitName());
             unitViewDto.setUnitConversionFactor(unit.getUnitConversionFactor());
@@ -197,6 +204,7 @@ public class UnitServiceImpl implements UnitService {
             associatedMaterialDto.setMaterialSKU(material.getMaterialSKU());
 
             return associatedMaterialDto;
+
         }).collect(Collectors.toList());
 
         unitViewDto.setAssociatedMaterialList(associatedMaterialDtoList);
@@ -211,22 +219,28 @@ public class UnitServiceImpl implements UnitService {
         Unit unit = unitRepo.findById(unitId)
         .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
 
-        if(unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+        if (unitDto.getUnitName() == null || unitDto.getUnitName().isEmpty()){
+
             throw new InvalidInputException("Unit name cannot be empty!");
         }
-        else if(unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+        else if (unitDto.getUnitShortName() == null || unitDto.getUnitShortName().isEmpty()){
+
             throw new InvalidInputException("Unit short name cannot be empty!");
         }
 
         if (!unit.getUnitName().equalsIgnoreCase(unitDto.getUnitName())){
+
             Optional<Unit> existingUnitByName = unitRepo.findByUnitName(unitDto.getUnitName());
-            if(existingUnitByName.isPresent()){
+            if (existingUnitByName.isPresent()){
+
                 throw new DataIntegrityViolationException("A Unit with the name " + unitDto.getUnitName() + " already exists!");
             }
         }
         if (!unit.getUnitShortName().equalsIgnoreCase(unitDto.getUnitShortName())){
+
             Optional<Unit> existingUnitByShortName = unitRepo.findByUnitShortName(unitDto.getUnitShortName());
-            if(existingUnitByShortName.isPresent()){
+            if (existingUnitByShortName.isPresent()){
+
                 throw new DataIntegrityViolationException("A Unit with the short name " + unitDto.getUnitShortName() + " already exists!");
             }
         }
@@ -245,7 +259,8 @@ public class UnitServiceImpl implements UnitService {
         unit.setUnitShortName(unitDto.getUnitShortName());
         unit.setUnitAllowDecimal(unitDto.getUnitAllowDecimal());
         
-        if(unitDto.getBaseUnitId() != null){
+        if (unitDto.getBaseUnitId() != null){
+
             Unit baseUnit = unitRepo.findById(unitDto.getBaseUnitId())
             .orElseThrow(() -> new UnitNotFoundException("Base Unit ID: " + unitDto.getBaseUnitId() + " is not found!"));
 
@@ -253,6 +268,7 @@ public class UnitServiceImpl implements UnitService {
             unit.setUnitConversionFactor(unitDto.getUnitConversionFactor());
         }
         else{
+
             unit.setBaseUnit(null);
             unit.setUnitConversionFactor(null);
         }
@@ -278,12 +294,15 @@ public class UnitServiceImpl implements UnitService {
             Action.UPDATE, 
             changes.isBlank() ? "No changes detected" : changes);
 
-        notificationService.createNotification(
-            "Unit Updated", 
-            updatedUnit.getUnitName() + " has been updated.", 
-            NotificationType.WARNING, 
-            "UNIT");
+        if (!changes.isBlank()){
 
+            notificationService.createNotification(
+                "Unit Updated", 
+                updatedUnit.getUnitName() + " has been updated.", 
+                NotificationType.WARNING, 
+                "UNIT");
+        }
+        
             return updatedUnit;
 
     }
@@ -302,7 +321,7 @@ public class UnitServiceImpl implements UnitService {
             "Unit", 
             unit.getUnitId(), 
             unit.getUnitName(), 
-            Action.CREATE, 
+            Action.DELETE, 
             "Deleted Unit: " + unit.getUnitName());
 
         notificationService.createNotification(
@@ -326,6 +345,7 @@ public class UnitServiceImpl implements UnitService {
             baseUnitDropDownDto.setBaseUnitShortName(unit.getUnitShortName());
 
             return baseUnitDropDownDto;
+
         }).collect(Collectors.toList());
 
         return BaseUnitDropDownDto;
@@ -345,6 +365,7 @@ public class UnitServiceImpl implements UnitService {
             unitDropDownDto.setOtherUnitShortName(unit.getUnitShortName());
 
             return unitDropDownDto;
+
         }).collect(Collectors.toList());
 
         return unitDropDownDtoList;
@@ -357,6 +378,7 @@ public class UnitServiceImpl implements UnitService {
         .orElseThrow(() -> new UnitNotFoundException("Unit ID: " + unitId + " is not found!"));
 
         if (unit.getUnitStatus() == Status.ACTIVE){
+            
             throw new DataIntegrityViolationException("Unit is already active!");
         }
 

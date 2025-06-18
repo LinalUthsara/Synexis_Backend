@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -286,15 +287,32 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public ResponseEntity<byte[]> viewAttachment(Long attachmentId) {
+    public ResponseEntity<byte[]> viewAttachment(Long attachmentId, String disposition) {
         
-        return attachmentRepo.findById(attachmentId)
-        .filter(attachment -> attachment.getFileData() != null)
-        .map(attachment -> ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_TYPE, attachment.getFileType())
-            .body(attachment.getFileData()))
+        Attachment attachment = attachmentRepo.findById(attachmentId)
         .orElseThrow(() -> new AttachmentNotFoundException("Attachment ID: " + attachmentId + " is not found or has no file data!"));
 
+        String mimeType = attachment.getFileType() != null ? attachment.getFileType() : "application/octet-stream";
+
+        String originalAttachmentName = attachment.getFilename();
+
+        String contentDisposition;
+        try {
+
+            String encodedFilename = java.net.URLEncoder.encode(originalAttachmentName, "UTF-8")
+                                .replace("+", "%20");
+        
+        contentDisposition = disposition + "; filename=\"" + originalAttachmentName + "\"; filename*=UTF-8''" + encodedFilename;
+        } catch (Exception e) {
+
+            contentDisposition = disposition + "; filename=\"" + originalAttachmentName + "\"";
+        }
+        
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(mimeType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+            .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Disposition")
+            .body(attachment.getFileData());
     }
 
     @Override
@@ -585,7 +603,6 @@ public class JobServiceImpl implements JobService {
         return updatedAttachments;
 
     }
-
 
     private Job updateJobFields(Job existingJob, JobDto jobDto){
 

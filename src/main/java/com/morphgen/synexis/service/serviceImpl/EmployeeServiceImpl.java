@@ -30,6 +30,7 @@ import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.EmployeeNotFoundException;
 import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
+import com.morphgen.synexis.exception.RoleNotFoundException;
 import com.morphgen.synexis.repository.EmployeeRepo;
 import com.morphgen.synexis.repository.RoleRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -60,19 +61,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         String defaultPassword = "Employee@123.";
 
         if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
+
             throw new InvalidInputException("Employee email cannot be empty!");
         }
         else if(employeeDto.getEmployeeNIC() == null || employeeDto.getEmployeeNIC().isEmpty()){
+
             throw new InvalidInputException("Employee NIC cannot be empty!");
+        }
+        else if(employeeDto.getRoleId() == null){
+
+            throw new InvalidInputException("Employee Role cannot be empty!");
         }
         
         Optional<Employee> existingEmployeeEmail = employeeRepo.findByEmployeeEmail(employeeDto.getEmployeeEmail());
         if (existingEmployeeEmail.isPresent()){
+
             throw new DataIntegrityViolationException("An Employee with the email " + employeeDto.getEmployeeEmail() + " already exists!");
         }
 
         Optional<Employee> existingEmployeeNIC = employeeRepo.findByEmployeeNIC(employeeDto.getEmployeeNIC());
         if (existingEmployeeNIC.isPresent()){
+
             throw new DataIntegrityViolationException("An Employee with the NIC " + employeeDto.getEmployeeNIC() + " already exists!");
         }
 
@@ -99,7 +108,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employee.setEmployeeImage(employeeImage);
             }
         }
-        catch(IOException e){
+        catch (IOException e){
+
             throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
         }
 
@@ -115,9 +125,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmployeeAddress(address);
 
-        Optional<Role> role = roleRepo.findByRoleName(employeeDto.getRoleName());
+        Optional<Role> role = roleRepo.findByRoleId(employeeDto.getRoleId());
         if (role.isEmpty()) {
-            throw new IllegalArgumentException("Role not found: " + employeeDto.getRoleName());
+
+            throw new RoleNotFoundException("Role ID not found: " + employeeDto.getRoleId());
         }
 
         employee.setRole(role.get());
@@ -141,19 +152,23 @@ public class EmployeeServiceImpl implements EmployeeService {
         Optional<Employee> optionalEmployee = employeeRepo.findById(employeeId);
 
         if (optionalEmployee.isPresent()) {
+
             Employee employee = optionalEmployee.get();
             EmployeeImage employeeImage = employee.getEmployeeImage();
 
             if (employeeImage != null && employeeImage.getEmployeeImageData() != null && employeeImage.getEmployeeImageData().length > 0) {
+                
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                         .body(employeeImage.getEmployeeImageData());
             } else {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null); // 204 No Content
+
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
             }
         } 
         else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // 404 Not Found
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -173,12 +188,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeTableViewDto.setEmployeeStatus(employee.getEmployeeStatus());
             employeeTableViewDto.setRoleName(employee.getRole().getRoleName());
 
-            if (employee.getEmployeeImage() != null) {
+            if (employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
                 employeeTableViewDto.setEmployeeImageUrl(imageUrl);
             }
 
             return employeeTableViewDto;
+
         }).collect(Collectors.toList());
 
         return employeeTableViewDtoList;
@@ -196,12 +213,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeSideDropViewDto.setEmployeeId(employee.getEmployeeId());
             employeeSideDropViewDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
 
-            if (employee.getEmployeeImage() != null) {
+            if (employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
                 employeeSideDropViewDto.setEmployeeImageUrl(imageUrl);
             }
 
             return employeeSideDropViewDto;
+
         }).collect(Collectors.toList());
 
         return employeeSideDropViewDtoList;
@@ -234,8 +253,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         
         employeeViewDto.setRoleName(employee.getRole().getRoleName());
+        employeeViewDto.setRoleId(employee.getRole().getRoleId());
 
-        if (employee.getEmployeeImage() != null) {
+        employeeViewDto.setEmployeeStatus(employee.getEmployeeStatus());
+
+        if (employee.getEmployeeImage() != null && employee.getEmployeeImage().getEmployeeImageData() != null) {
+
                 String imageUrl = ImageUrlUtil.constructEmployeeImageUrl(employee.getEmployeeId());
                 employeeViewDto.setEmployeeImageUrl(imageUrl);
             }
@@ -250,21 +273,31 @@ public class EmployeeServiceImpl implements EmployeeService {
         .orElseThrow(() -> new EmployeeNotFoundException("Employee ID: " + employeeId + " is not found!"));
 
         if(employeeDto.getEmployeeEmail() == null || employeeDto.getEmployeeEmail().isEmpty()){
+
             throw new InvalidInputException("Employee email cannot be empty!");
         }
         else if(employeeDto.getEmployeeNIC() == null || employeeDto.getEmployeeNIC().isEmpty()){
+
             throw new InvalidInputException("Employee NIC cannot be empty!");
+        }
+        else if(employeeDto.getRoleId() == null){
+
+            throw new InvalidInputException("Employee Role cannot be empty!");
         }
 
         if (!employee.getEmployeeEmail().equalsIgnoreCase(employeeDto.getEmployeeEmail())) {
+
             Optional<Employee> existingEmployeeEmail = employeeRepo.findByEmployeeEmail(employeeDto.getEmployeeEmail());
             if (existingEmployeeEmail.isPresent()){
+
                 throw new DataIntegrityViolationException("An Employee with the email " + employeeDto.getEmployeeEmail() + " already exists!");
             }
         }
         if (!employee.getEmployeeNIC().equalsIgnoreCase(employeeDto.getEmployeeNIC())) {
+
             Optional<Employee> existingEmployeeNIC = employeeRepo.findByEmployeeNIC(employeeDto.getEmployeeNIC());
             if (existingEmployeeNIC.isPresent()){
+                
                 throw new DataIntegrityViolationException("An Employee with the NIC " + employeeDto.getEmployeeNIC() + " already exists!");
             }
         }
@@ -302,6 +335,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 EmployeeImage employeeImage = employee.getEmployeeImage();
 
                 if (employeeImage == null){
+                    
                     employeeImage = new EmployeeImage();
                 }
 
@@ -342,9 +376,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmployeeAddress(address);
 
-        Optional<Role> role = roleRepo.findByRoleName(employeeDto.getRoleName());
+        Optional<Role> role = roleRepo.findByRoleId(employeeDto.getRoleId());
         if (role.isEmpty()) {
-            throw new IllegalArgumentException("Role not found: " + employeeDto.getRoleName());
+            throw new RoleNotFoundException("Role ID not found: " + employeeDto.getRoleId());
         }
 
         employee.setRole(role.get());

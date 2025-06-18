@@ -39,7 +39,7 @@ public class BrandController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CREATE_BRAND')")
+    @PreAuthorize("hasAuthority('BRAND_CREATE')")
     public ResponseEntity<String> createBrand(@ModelAttribute BrandDto brandDto) throws IOException {
 
         brandService.createBrand(brandDto);

@@ -17,6 +17,8 @@ public interface MaterialRepo extends JpaRepository<Material, Long> {
     
     Optional<Material> findByMaterialName(String materialName);
     Optional<Material> findByMaterialSKU(String materialSKU);
+    Optional<Material> findByMaterialPartNumber(String materialPartNumber);
+
     List<Material> findAllByOrderByMaterialIdDesc();
 
     @Query("SELECT m FROM Material m " +

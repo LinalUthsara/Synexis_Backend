@@ -2,9 +2,12 @@ package com.morphgen.synexis.service.serviceImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,7 @@ import com.morphgen.synexis.enums.Status;
 import com.morphgen.synexis.exception.CustomerNotFoundException;
 import com.morphgen.synexis.exception.FileNotFoundException;
 import com.morphgen.synexis.exception.FileProcessingException;
+import com.morphgen.synexis.exception.ImageProcessingException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.repository.CustomerRepo;
 import com.morphgen.synexis.service.ActivityLogService;
@@ -52,15 +56,29 @@ public class CustomerServiceImpl implements CustomerService {
     private NotificationService notificationService;
 
 
-    private File createFile(MultipartFile multipartFile, DocumentType docType, Customer customer) throws IOException {
+    private File processCustomerDocument(MultipartFile multipartFile, DocumentType documentType, Customer customer) {
         
         File file = new File();
-        file.setFilename(multipartFile.getOriginalFilename());
-        file.setFileType(multipartFile.getContentType());
-        file.setFileSize(multipartFile.getSize());
-        file.setFileData(multipartFile.getBytes());
-        file.setDocumentType(docType);
+        file.setDocumentType(documentType);
         file.setCustomer(customer);
+
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            try {
+                file.setFilename(multipartFile.getOriginalFilename());
+                file.setFileType(multipartFile.getContentType());
+                file.setFileSize(multipartFile.getSize());
+                file.setFileData(multipartFile.getBytes());
+            } catch (IOException e) {
+                throw new FileProcessingException("Unable to process file. Please ensure the file is valid and try again!");
+            }
+        } else {
+
+            file.setFilename(null);
+            file.setFileType(null);
+            file.setFileSize(null);
+            file.setFileData(null);
+        }
+
         return file;
     }
 
@@ -96,19 +114,9 @@ public class CustomerServiceImpl implements CustomerService {
 
         List<File> customerFiles = new ArrayList<>();
 
-        try {
-            if (customerDto.getBRC() != null && !customerDto.getBRC().isEmpty()) {
-                customerFiles.add(createFile(customerDto.getBRC(), DocumentType.BRC, customer));
-            }
-            if (customerDto.getVAT() != null && !customerDto.getVAT().isEmpty()) {
-                customerFiles.add(createFile(customerDto.getVAT(), DocumentType.VAT, customer));
-            }
-            if (customerDto.getSVAT() != null && !customerDto.getSVAT().isEmpty()) {
-                customerFiles.add(createFile(customerDto.getSVAT(), DocumentType.SVAT, customer));
-            }
-        } catch (IOException e) {
-            throw new FileProcessingException("Unable to process file. Please ensure the file is valid and try again!");
-        }
+        customerFiles.add(processCustomerDocument(customerDto.getBRC(), DocumentType.BRC, customer));
+        customerFiles.add(processCustomerDocument(customerDto.getVAT(), DocumentType.VAT, customer));
+        customerFiles.add(processCustomerDocument(customerDto.getSVAT(), DocumentType.SVAT, customer));
 
         customer.setFiles(customerFiles);
 
@@ -196,15 +204,17 @@ public class CustomerServiceImpl implements CustomerService {
         }
         
         for (File file : customer.getFiles()) {
-        String fileUrl = DocumentUrlUtil.constructCustomerDocumentUrl(
-            customer.getCustomerId(), file.getDocumentType()
-        );
+            if (file.getFileData() != null){
 
-        switch (file.getDocumentType()) {
-            case BRC -> customerViewDto.setBRCDocUrl(fileUrl);
-            case VAT -> customerViewDto.setVATDocUrl(fileUrl);
-            case SVAT -> customerViewDto.setSVATDocUrl(fileUrl);
-        }
+                String fileUrl = DocumentUrlUtil.constructCustomerDocumentUrl(
+                customer.getCustomerId(), file.getDocumentType());
+
+                switch (file.getDocumentType()) {
+                case BRC -> customerViewDto.setBRCDocUrl(fileUrl);
+                case VAT -> customerViewDto.setVATDocUrl(fileUrl);
+                case SVAT -> customerViewDto.setSVATDocUrl(fileUrl);
+                }
+            }
     }
 
         return customerViewDto;
@@ -228,11 +238,16 @@ public class CustomerServiceImpl implements CustomerService {
             }
         }
         
-        Map<DocumentType, byte[]> fileData = customer.getFiles().stream()
-        .collect(Collectors.toMap(
-        File::getDocumentType,
-        File::getFileData
-        ));
+        Map<DocumentType, byte[]> fileData = Optional.ofNullable(customer.getFiles())
+            
+            .orElse(Collections.emptyList())
+            .stream()
+            .filter(f -> f != null && f.getDocumentType() != null && f.getFileData() != null)
+            .collect(Collectors.toMap(
+                File::getDocumentType,
+                File::getFileData
+            )
+        );
 
         CustomerUpdateDto existingCustomer = CustomerUpdateDto.builder()
         .customerId(customer.getCustomerId())
@@ -255,34 +270,60 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setCustomerFirstName(customerDto.getCustomerFirstName());
         customer.setCustomerLastName(customerDto.getCustomerLastName());
 
-        List<File> updatedFiles = new ArrayList<>();
+        Map<DocumentType, MultipartFile> newFiles = new HashMap<>();
+            newFiles.put(DocumentType.BRC, customerDto.getBRC());
+            newFiles.put(DocumentType.VAT, customerDto.getVAT());
+            newFiles.put(DocumentType.SVAT, customerDto.getSVAT());
 
-        try {
-            if (customerDto.getBRC() != null && !customerDto.getBRC().isEmpty()) {
-                updatedFiles.add(createFile(customerDto.getBRC(), DocumentType.BRC, customer));
-            }
-            else if(customerDto.getBRC() == null || customerDto.getBRC().isEmpty()){
-                customer.getFiles().removeIf(file -> file.getDocumentType() == DocumentType.BRC);
-            }
-            if (customerDto.getVAT() != null && !customerDto.getVAT().isEmpty()) {
-                updatedFiles.add(createFile(customerDto.getVAT(), DocumentType.VAT, customer));
-            }
-            else if(customerDto.getVAT() == null || customerDto.getVAT().isEmpty()){
-                customer.getFiles().removeIf(file -> file.getDocumentType() == DocumentType.VAT);
-            }
-            if (customerDto.getSVAT() != null && !customerDto.getSVAT().isEmpty()) {
-                updatedFiles.add(createFile(customerDto.getSVAT(), DocumentType.SVAT, customer));
-            }
-            else if(customerDto.getSVAT() == null || customerDto.getSVAT().isEmpty()){
-                customer.getFiles().removeIf(file -> file.getDocumentType() == DocumentType.SVAT);
-            }
-        } 
-        catch (IOException e) {
-            throw new FileProcessingException("Unable to process file. Please ensure the file is valid and try again!");
+        if (customer.getFiles() == null) {
+
+            customer.setFiles(new ArrayList<>());
         }
 
-        customer.setFiles(updatedFiles);
+        Map<DocumentType, File> existingFileMap = customer.getFiles().stream()
+            .filter(f -> f != null && f.getDocumentType() != null)
+            .collect(Collectors.toMap(
+                File::getDocumentType,
+                Function.identity(),
+                (v1, _) -> v1 
+    ));
 
+            for (Map.Entry<DocumentType, MultipartFile> entry : newFiles.entrySet()) {
+                
+                DocumentType type = entry.getKey();
+                MultipartFile newFile = entry.getValue();
+
+                File file = existingFileMap.get(type);
+
+                if (file == null) {
+
+                    file = new File();
+                    file.setDocumentType(type);
+                    file.setCustomer(customer);
+                    customer.getFiles().add(file);
+                }
+
+                if (newFile != null && !newFile.isEmpty()) {
+                    
+                    try {
+                        file.setFilename(newFile.getOriginalFilename());
+                        file.setFileType(newFile.getContentType());
+                        file.setFileSize(newFile.getSize());
+                        file.setFileData(newFile.getBytes());
+                    } 
+                    catch (IOException e) {
+
+                    throw new ImageProcessingException("Unable to process " + type + " file");
+                }
+                } 
+                else {
+                    file.setFilename(null);
+                    file.setFileType(null);
+                    file.setFileSize(null);
+                    file.setFileData(null);
+                }
+            }
+        
         customer.setCustomerEmail(customerDto.getCustomerEmail());
         customer.setCustomerPhoneNumber(customerDto.getCustomerPhoneNumber());
 
@@ -296,11 +337,16 @@ public class CustomerServiceImpl implements CustomerService {
 
         Customer updatedCustomer = customerRepo.save(customer);
 
-        Map<DocumentType, byte[]> newFileData = updatedCustomer.getFiles().stream()
-        .collect(Collectors.toMap(
-        File::getDocumentType,
-        File::getFileData
-        ));
+        Map<DocumentType, byte[]> newFileData = Optional.ofNullable(customer.getFiles())
+            
+            .orElse(Collections.emptyList())
+            .stream()
+            .filter(f -> f != null && f.getDocumentType() != null && f.getFileData() != null)
+            .collect(Collectors.toMap(
+                File::getDocumentType,
+                File::getFileData
+            )
+        );
 
         CustomerUpdateDto newCustomer = CustomerUpdateDto.builder()
         .customerId(updatedCustomer.getCustomerId())

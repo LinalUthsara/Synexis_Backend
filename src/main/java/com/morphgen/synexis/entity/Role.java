@@ -6,6 +6,8 @@ import java.util.Set;
 import com.morphgen.synexis.enums.Status;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +27,7 @@ public class Role {
 
     private String roleName;
 
+    @Enumerated(EnumType.STRING)
     private Status roleStatus;
 
     @PrePersist

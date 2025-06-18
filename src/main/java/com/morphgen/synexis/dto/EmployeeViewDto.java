@@ -2,6 +2,8 @@ package com.morphgen.synexis.dto;
 
 import java.time.LocalDate;
 
+import com.morphgen.synexis.enums.Status;
+
 import lombok.Data;
 
 @Data
@@ -37,4 +39,8 @@ public class EmployeeViewDto {
     private String zipCode;
 
     private String roleName;
+
+    private Long roleId;
+
+    private Status employeeStatus;
 }

@@ -4,12 +4,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.morphgen.synexis.dto.RoleDropDownDto;
 import com.morphgen.synexis.dto.RoleDto;
 import com.morphgen.synexis.entity.Privilege;
 import com.morphgen.synexis.entity.Role;
@@ -89,5 +91,24 @@ public class RoleServiceImpl implements RoleService {
             "ROLE");
 
         return newRole;
+    }
+
+    @Override
+    public List<RoleDropDownDto> roleDropDown(String searchRole) {
+        
+        List<Role> roles = roleRepo.searchActiveRoles(searchRole);
+
+        List<RoleDropDownDto> roleDropDownDtoList = roles.stream().map(role -> {
+            
+            RoleDropDownDto roleDropDownDto = new RoleDropDownDto();
+
+            roleDropDownDto.setRoleId(role.getRoleId());
+            roleDropDownDto.setRoleName(role.getRoleName());
+
+            return roleDropDownDto;
+            
+        }).collect(Collectors.toList());
+
+        return roleDropDownDtoList;
     }
 }

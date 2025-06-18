@@ -18,7 +18,7 @@ public interface JobService {
     
     Job createJob(JobDto jobDto);
 
-    ResponseEntity<byte[]> viewAttachment(Long attachmentId);
+    ResponseEntity<byte[]> viewAttachment(Long attachmentId, String disposition);
     List<JobTableViewDto> viewJobTable();
     List<JobSideDropViewDto> viewJobSideDrop();
     JobViewDto viewJobById(Long jobId);
