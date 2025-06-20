@@ -3,6 +3,7 @@ package com.morphgen.synexis.service;
 import org.springframework.stereotype.Service;
 
 import com.morphgen.synexis.dto.CostEstimationDto;
+import com.morphgen.synexis.dto.CostEstimationForBOQViewDto;
 import com.morphgen.synexis.dto.CostEstimationTableViewDto;
 import com.morphgen.synexis.dto.CostEstimationViewDto;
 import com.morphgen.synexis.entity.CostEstimation;
@@ -18,6 +19,8 @@ public interface CostEstimationService {
     CostEstimationTableViewDto viewEstimationApprovalTable(Long inquiryId);
 
     CostEstimationViewDto viewEstimationById(Long estimationId);
+    
+    CostEstimationForBOQViewDto viewEstimationForBOQ(Long jobId);
 
     CostEstimation updateEstimation(Long estimationId, CostEstimationDto costEstimationDto);
 

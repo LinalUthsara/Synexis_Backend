@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.morphgen.synexis.dto.JobCreateDto;
 import com.morphgen.synexis.dto.JobDto;
 import com.morphgen.synexis.dto.JobSideDropViewDto;
 import com.morphgen.synexis.dto.JobTableViewDto;
@@ -39,7 +40,7 @@ public class JobController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('JOB_CREATE')")
-    public ResponseEntity<String> createJob(@ModelAttribute JobDto jobDto) throws IOException {
+    public ResponseEntity<String> createJob(@ModelAttribute JobCreateDto jobDto) throws IOException {
 
         jobService.createJob(jobDto);
 

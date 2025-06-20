@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.morphgen.synexis.dto.BoqItemMaterialViewDto;
+import com.morphgen.synexis.dto.BoqItemViewDto;
 import com.morphgen.synexis.dto.CostEstimationDto;
+import com.morphgen.synexis.dto.CostEstimationForBOQViewDto;
 import com.morphgen.synexis.dto.CostEstimationTableDto;
 import com.morphgen.synexis.dto.CostEstimationTableViewDto;
 import com.morphgen.synexis.dto.CostEstimationViewDto;
@@ -24,6 +27,7 @@ import com.morphgen.synexis.entity.CostEstimation;
 import com.morphgen.synexis.entity.Inquiry;
 import com.morphgen.synexis.entity.Item;
 import com.morphgen.synexis.entity.ItemMaterial;
+import com.morphgen.synexis.entity.Job;
 import com.morphgen.synexis.entity.Material;
 import com.morphgen.synexis.enums.Action;
 import com.morphgen.synexis.enums.EstimationStatus;
@@ -31,11 +35,13 @@ import com.morphgen.synexis.exception.CostEstimationNotFoundException;
 import com.morphgen.synexis.exception.IllegalStatusTransitionException;
 import com.morphgen.synexis.exception.InquiryNotFoundException;
 import com.morphgen.synexis.exception.InvalidStatusException;
+import com.morphgen.synexis.exception.JobNotFoundException;
 import com.morphgen.synexis.exception.MaterialNotFoundException;
 import com.morphgen.synexis.repository.CostEstimationRepo;
 import com.morphgen.synexis.repository.InquiryRepo;
 import com.morphgen.synexis.repository.ItemMaterialRepo;
 import com.morphgen.synexis.repository.ItemRepo;
+import com.morphgen.synexis.repository.JobRepo;
 import com.morphgen.synexis.repository.MaterialRepo;
 import com.morphgen.synexis.service.ActivityLogService;
 import com.morphgen.synexis.service.CostEstimationService;
@@ -62,6 +68,9 @@ public class CostEstimationServiceImpl implements CostEstimationService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private JobRepo jobRepo;
 
     @Override
     @Transactional
@@ -339,7 +348,7 @@ public class CostEstimationServiceImpl implements CostEstimationService {
 
         CostEstimationViewDto costEstimationViewDto = new CostEstimationViewDto();
 
-        costEstimationViewDto.setInquiryId(estimation.getEstimationId());
+        costEstimationViewDto.setInquiryId(estimation.getInquiry().getInquiryId());
         costEstimationViewDto.setQuotationVersion(estimation.getQuotationVersion());
         costEstimationViewDto.setEstimationStatus(estimation.getEstimationStatus());
         costEstimationViewDto.setLabourRate(estimation.getLabourRate());
@@ -476,6 +485,51 @@ public class CostEstimationServiceImpl implements CostEstimationService {
 
         return updatedEstimation;
     }
+
+    @Override
+    public CostEstimationForBOQViewDto viewEstimationForBOQ(Long jobId) {
+        
+        Job job = jobRepo.findById(jobId)
+        .orElseThrow(() -> new JobNotFoundException("Job ID: " + jobId + " is not found!"));
+
+        CostEstimation estimation = job.getEstimation();
+
+        CostEstimationForBOQViewDto costEstimationForBOQViewDto = new CostEstimationForBOQViewDto();
+
+        costEstimationForBOQViewDto.setJobId(job.getJobId());
+
+        List<BoqItemViewDto> boqItemViewDtoList = estimation.getItems().stream().map(item ->{
+
+            BoqItemViewDto boqItemViewDto = new BoqItemViewDto();
+
+            boqItemViewDto.setItemId(item.getItemId());
+            boqItemViewDto.setItemName(item.getItemName());
+            boqItemViewDto.setItemQuantity(item.getItemQuantity());
+
+            List<BoqItemMaterialViewDto> boqItemMaterialViewDtoList = item.getMaterials().stream().map(itemMaterial ->{
+
+                BoqItemMaterialViewDto boqItemMaterialViewDto = new BoqItemMaterialViewDto();
+
+                boqItemMaterialViewDto.setItemMaterialId(itemMaterial.getItemMaterialId());
+                boqItemMaterialViewDto.setMaterialName(itemMaterial.getMaterial().getMaterialName());
+                boqItemMaterialViewDto.setMaterialId(itemMaterial.getMaterial().getMaterialId());
+                boqItemMaterialViewDto.setMaterialQuantity(itemMaterial.getMaterialQuantity());
+                boqItemMaterialViewDto.setSectionId(MaterialTypeUtil.generateSectionId(itemMaterial.getMaterial().getMaterialType()));
+                boqItemMaterialViewDto.setMaterialDescription(itemMaterial.getMaterial().getMaterialDescription());
+
+                return boqItemMaterialViewDto;
+            }).collect(Collectors.toList());
+
+            boqItemViewDto.setItemMaterials(boqItemMaterialViewDtoList);
+
+            return boqItemViewDto;
+        }).collect(Collectors.toList());
+
+        costEstimationForBOQViewDto.setItems(boqItemViewDtoList);
+
+        return costEstimationForBOQViewDto;
+    }
+    
 
 }
 

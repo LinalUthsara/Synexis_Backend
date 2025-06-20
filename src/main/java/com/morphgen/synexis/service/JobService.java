@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.morphgen.synexis.dto.JobCreateDto;
 import com.morphgen.synexis.dto.JobDto;
 import com.morphgen.synexis.dto.JobSideDropViewDto;
 import com.morphgen.synexis.dto.JobTableViewDto;
@@ -16,7 +17,7 @@ import com.morphgen.synexis.enums.JobStatus;
 
 public interface JobService {
     
-    Job createJob(JobDto jobDto);
+    Job createJob(JobCreateDto jobCreateDto);
 
     ResponseEntity<byte[]> viewAttachment(Long attachmentId, String disposition);
     List<JobTableViewDto> viewJobTable();

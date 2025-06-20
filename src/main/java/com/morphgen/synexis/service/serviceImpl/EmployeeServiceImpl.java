@@ -493,7 +493,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         EmployeeLoginDto employeeLoginDto = new EmployeeLoginDto();
 
         employeeLoginDto.setEmployeeId(employee.getEmployeeId());
-        employeeLoginDto.setEmployeeName(employee.getEmployeePrefix() + " " + employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
+        employeeLoginDto.setEmployeeName(employee.getEmployeeFirstName() + " " + employee.getEmployeeLastName());
         employeeLoginDto.setRoleName(employee.getRole().getRoleName());
         employeeLoginDto.setIsPasswordChanged(employee.getIsPasswordChanged());
 

@@ -22,6 +22,7 @@ import com.morphgen.synexis.dto.AttachmentViewDto;
 import com.morphgen.synexis.dto.CableBusbarDto;
 import com.morphgen.synexis.dto.EnclosureDto;
 import com.morphgen.synexis.dto.FloorDimensionDto;
+import com.morphgen.synexis.dto.JobCreateDto;
 import com.morphgen.synexis.dto.JobDto;
 import com.morphgen.synexis.dto.JobSideDropViewDto;
 import com.morphgen.synexis.dto.JobTableViewDto;
@@ -110,7 +111,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     @Transactional
-    public Job createJob(JobDto jobDto) {
+    public Job createJob(JobCreateDto jobDto) {
         
         CostEstimation estimation = costEstimationRepo.findById(jobDto.getEstimationId())
         .orElseThrow(() -> new CostEstimationNotFoundException("Cost Estimation ID: " + jobDto.getEstimationId() + " is not found!"));
@@ -141,10 +142,10 @@ public class JobServiceImpl implements JobService {
 
         if (jobDto.getAttachments() != null && !jobDto.getAttachments().isEmpty()) {
     
-            for (AttachmentDto attachmentFile : jobDto.getAttachments()) {
+            for (MultipartFile attachmentFile : jobDto.getAttachments()) {
                 if (attachmentFile != null) {
                     try {
-                        Attachment attachment = createAttachment(attachmentFile.getAttachment(), job);
+                        Attachment attachment = createAttachment(attachmentFile, job);
                         jobAttachments.add(attachment);
                     } catch (IOException e) {
                         throw new ImageProcessingException("Unable to process image. Please ensure the image is valid and try again!");
@@ -533,14 +534,14 @@ public class JobServiceImpl implements JobService {
     }
 
     private void updateAttachments(Job existingJob, List<AttachmentDto> attachments) {
-            
-            List<Attachment> updatedAttachments = processAttachments(existingJob, attachments);
+        
+        List<Attachment> updatedAttachments = processAttachments(existingJob, attachments);
 
-            existingJob.setAttachments(updatedAttachments);
+        existingJob.setAttachments(updatedAttachments);
             
-            jobRepo.save(existingJob);
+        jobRepo.save(existingJob);
 
-        }
+    }
 
 
     private List<Attachment> processAttachments(Job existingJob, List<AttachmentDto> attachmentDtos) {
