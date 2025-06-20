@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.morphgen.synexis.dto.CostEstimationDto;
+import com.morphgen.synexis.dto.CostEstimationForBOQViewDto;
 import com.morphgen.synexis.dto.CostEstimationTableViewDto;
 import com.morphgen.synexis.dto.CostEstimationViewDto;
 import com.morphgen.synexis.enums.EstimationStatus;
@@ -90,6 +91,15 @@ public class CostEstimationController {
         costEstimationService.handleEstimation(estimationId, estimationStatus);
 
         return ResponseEntity.status(HttpStatus.OK).body("Cost Estimation successfully " + estimationStatus + "!");
+    }
+
+    @GetMapping("/estimationForBOQ/{jobId}")
+    @PreAuthorize("hasAuthority('ESTIMATION_VIEW')")
+    public ResponseEntity<CostEstimationForBOQViewDto> viewEstimationForBOQ(@PathVariable Long jobId){
+
+        CostEstimationForBOQViewDto costEstimationForBOQViewDto = costEstimationService.viewEstimationForBOQ(jobId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(costEstimationForBOQViewDto);
     }
 
 }

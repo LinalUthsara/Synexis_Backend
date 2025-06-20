@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.morphgen.synexis.enums.InvoiceType;
 import com.morphgen.synexis.enums.JobStatus;
 import com.morphgen.synexis.enums.PaymentType;
@@ -74,5 +75,9 @@ public class Job {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "estimationId")
     private CostEstimation estimation;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
+    private List<BillOfQuantities> billOfQuantities;
 
 }

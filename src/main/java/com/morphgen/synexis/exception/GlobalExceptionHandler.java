@@ -115,4 +115,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + roleNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = BoqNotFoundException.class)
+    public ResponseEntity<String> BoqNotFoundExceptionHandler (BoqNotFoundException boqNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + boqNotFoundException.getMessage());
+    }
+
+    @ExceptionHandler(value = DesignProcessingException.class)
+    public ResponseEntity<String> DesignProcessingExceptionHandler (DesignProcessingException designProcessingException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer Design Processing Failed: " + designProcessingException.getMessage());
+    }
+
+    @ExceptionHandler(value = CustomerDesignNotFoundException.class)
+    public ResponseEntity<String> CustomerDesignNotFoundExceptionHandler (CustomerDesignNotFoundException customerDesignNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + customerDesignNotFoundException.getMessage());
+    }
+
 }
