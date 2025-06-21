@@ -810,4 +810,29 @@ public class JobServiceImpl implements JobService {
         return updatedJob;
     }
 
+    @Override
+    public List<JobTableViewDto> viewJobTableForDesign() {
+        
+        List<Job> jobs = jobRepo.findByJobStatusOrderByJobIdDesc(JobStatus.READY_FOR_DESIGNING);
+
+        List<JobTableViewDto> jobTableViewDtoList = jobs.stream().map(job -> {
+
+            JobTableViewDto jobTableViewDto = new JobTableViewDto();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy");
+
+            jobTableViewDto.setJobId(job.getJobId());
+            jobTableViewDto.setProjectName(job.getEstimation().getInquiry().getProjectName());
+            jobTableViewDto.setQuotationVersion(job.getEstimation().getQuotationVersion());
+            jobTableViewDto.setCustomerName(job.getEstimation().getInquiry().getCustomer().getCustomerPrefix() + " " + job.getEstimation().getInquiry().getCustomer().getCustomerFirstName() + " " + job.getEstimation().getInquiry().getCustomer().getCustomerLastName());
+            jobTableViewDto.setJobReturnDate(job.getEstimation().getInquiry().getProjectReturnDate().format(formatter));
+            jobTableViewDto.setJobStatus(job.getJobStatus());
+
+            return jobTableViewDto;
+
+        }).collect(Collectors.toList());
+
+        return jobTableViewDtoList;
+    }
+
 }

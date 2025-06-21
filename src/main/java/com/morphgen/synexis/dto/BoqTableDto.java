@@ -16,4 +16,6 @@ public class BoqTableDto {
 
     private String lastModifiedDate;
 
+    private Boolean customerDesignPresent;
+
 }

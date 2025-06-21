@@ -10,6 +10,7 @@ import com.morphgen.synexis.dto.BoqViewDto;
 import com.morphgen.synexis.dto.CustomerDesignAssetViewDto;
 import com.morphgen.synexis.entity.BillOfQuantities;
 
+
 @Service
 
 public interface BillOfQuantitiesService {
@@ -17,10 +18,13 @@ public interface BillOfQuantitiesService {
     BillOfQuantities createBOQ(BoqDto boqDto);
 
     BoqTableViewDto viewBoqByJobId(Long jobId);
+    BoqTableViewDto viewSubmittedBoq(Long jobId);
 
     BoqViewDto viewBoqById(Long boqId);
 
     BillOfQuantities updateBOQ(Long boqId, BoqDto boqDto);
+
+    BillOfQuantities handleBillOfQuantities(Long boqId);
 
     void addCustomerDesign(Long boqId, BoqDesignDto boqDesignDto);
     CustomerDesignAssetViewDto viewCustomerDesignByBoqId(Long boqId);

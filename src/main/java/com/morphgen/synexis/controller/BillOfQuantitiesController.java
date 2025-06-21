@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -93,6 +94,24 @@ public class BillOfQuantitiesController {
     public ResponseEntity<byte[]> viewCustomerDesign(@PathVariable Long cDesignId, @RequestParam(defaultValue = "inline") String disposition) {
         
         return billOfQuantitiesService.viewCustomerDesign(cDesignId, disposition);
+    }
+
+    @PatchMapping("handle/{boqId}")
+    // @PreAuthorize("hasAuthority('JOB_APPROVE')")
+    public ResponseEntity<String> handleBillOfQuantities(@PathVariable Long boqId){
+
+        billOfQuantitiesService.handleBillOfQuantities(boqId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("BOQ successfully submitted!");
+    }
+
+    @GetMapping("submittedBOQ/{jobId}")
+    // @PreAuthorize("hasAuthority('ESTIMATION_VIEW')")
+    public ResponseEntity<BoqTableViewDto> viewSubmittedBoq(@PathVariable Long jobId) {
+        
+        BoqTableViewDto boqTableViewDto = billOfQuantitiesService.viewSubmittedBoq(jobId);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(boqTableViewDto);
     }
 
 }
