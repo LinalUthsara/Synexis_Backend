@@ -21,8 +21,10 @@ public interface JobService {
 
     ResponseEntity<byte[]> viewAttachment(Long attachmentId, String disposition);
     List<JobTableViewDto> viewJobTable();
+    List<JobTableViewDto> viewJobTableForDesign();
     List<JobSideDropViewDto> viewJobSideDrop();
     JobViewDto viewJobById(Long jobId);
+
 
     Job updateJob(Long jobId, JobDto jobDto);
     

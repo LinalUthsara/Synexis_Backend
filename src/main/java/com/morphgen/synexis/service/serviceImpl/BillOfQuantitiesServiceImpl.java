@@ -43,6 +43,7 @@ import com.morphgen.synexis.enums.JobStatus;
 import com.morphgen.synexis.exception.BoqNotFoundException;
 import com.morphgen.synexis.exception.CustomerDesignNotFoundException;
 import com.morphgen.synexis.exception.DesignProcessingException;
+import com.morphgen.synexis.exception.IllegalStatusTransitionException;
 import com.morphgen.synexis.exception.InvalidInputException;
 import com.morphgen.synexis.exception.InvalidStatusException;
 import com.morphgen.synexis.exception.JobNotFoundException;
@@ -153,6 +154,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
         BoqTableViewDto boqTableViewDto = new BoqTableViewDto();
 
         boqTableViewDto.setJobId(job.getJobId());
+        boqTableViewDto.setProjectName(job.getEstimation().getInquiry().getProjectName());
         boqTableViewDto.setQuotationVersion(job.getEstimation().getQuotationVersion());
 
         List<BoqTableDto> boqTableDtoList = billOfQuantities.stream().map(boq -> {
@@ -165,6 +167,15 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
             boqTableDto.setBoqVersion(boq.getBoqVersion());
             boqTableDto.setBoqStatus(boq.getBoqStatus());
             boqTableDto.setLastModifiedDate(boq.getUpdatedAt().format(formatter));
+
+            if (boq.getCustomerDesigns() != null && !boq.getCustomerDesigns().isEmpty()) {
+                
+                boqTableDto.setCustomerDesignPresent(true);
+            } 
+            else {
+                
+                boqTableDto.setCustomerDesignPresent(false);
+            }
 
             return boqTableDto;
 
@@ -366,6 +377,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
     }
 
     @Override
+    @Transactional
     public void addCustomerDesign(Long boqId, BoqDesignDto boqDesignDto) {
         
         BillOfQuantities billOfQuantities = billOfQuantitiesRepo.findById(boqId)
@@ -496,6 +508,73 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
             .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
             .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Disposition")
             .body(customerDesign.getCDesignData());
+    }
+
+    @Override
+    public BillOfQuantities handleBillOfQuantities(Long boqId) {
+        
+        BillOfQuantities billOfQuantities = billOfQuantitiesRepo.findById(boqId)
+            .orElseThrow(() -> new DesignProcessingException("BOQ ID: " + boqId + " is not found!"));
+
+        if (billOfQuantities.getBoqStatus() != BoqStatus.READY_TO_SUBMIT){
+
+            throw new IllegalStatusTransitionException("Requires a completed BOQ to submit assets!");
+        }
+
+        billOfQuantities.setBoqStatus(BoqStatus.SUBMITTED);
+
+        Job job = billOfQuantities.getJob();
+
+        job.setJobStatus(JobStatus.READY_FOR_DESIGNING);
+        jobRepo.save(job);
+
+        BillOfQuantities updatedBillOfQuantities = billOfQuantitiesRepo.save(billOfQuantities);
+
+        return updatedBillOfQuantities;
+    }
+
+    @Override
+    public BoqTableViewDto viewSubmittedBoq(Long jobId) {
+        
+        Job job = jobRepo.findById(jobId)
+        .orElseThrow(() -> new JobNotFoundException("Job ID: " + jobId + " is not found!"));
+
+        List<BillOfQuantities> billOfQuantities = billOfQuantitiesRepo.findByJob_JobIdAndBoqStatusOrderByBoqIdDesc(jobId, BoqStatus.SUBMITTED);
+
+        BoqTableViewDto boqTableViewDto = new BoqTableViewDto();
+
+        boqTableViewDto.setJobId(job.getJobId());
+        boqTableViewDto.setProjectName(job.getEstimation().getInquiry().getProjectName());
+        boqTableViewDto.setQuotationVersion(job.getEstimation().getQuotationVersion());
+
+        List<BoqTableDto> boqTableDtoList = billOfQuantities.stream().map(boq -> {
+
+            BoqTableDto boqTableDto = new BoqTableDto();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy");
+
+            boqTableDto.setBoqId(boq.getBoqId());
+            boqTableDto.setBoqVersion(boq.getBoqVersion());
+            boqTableDto.setBoqStatus(boq.getBoqStatus());
+            boqTableDto.setLastModifiedDate(boq.getUpdatedAt().format(formatter));
+
+            if (boq.getCustomerDesigns() != null && !boq.getCustomerDesigns().isEmpty()) {
+                
+                boqTableDto.setCustomerDesignPresent(true);
+            } 
+            else {
+                
+                boqTableDto.setCustomerDesignPresent(false);
+            }
+
+            return boqTableDto;
+
+        }).collect(Collectors.toList());
+
+        boqTableViewDto.setBoqs(boqTableDtoList);
+
+        return boqTableViewDto;
+
     }
 }
 

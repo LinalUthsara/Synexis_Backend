@@ -108,4 +108,13 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.OK).body("Job successfully " + jobStatus + "!");
     }
 
+    @GetMapping("/jobForDesign")
+    @PreAuthorize("hasAuthority('JOB_VIEW')")
+    public ResponseEntity<List<JobTableViewDto>> viewJobTableForDesign(){
+        
+        List<JobTableViewDto> jobTableViewDtoList = jobService.viewJobTableForDesign();
+        
+        return ResponseEntity.status(HttpStatus.OK).body(jobTableViewDtoList);
+    }
+
 }

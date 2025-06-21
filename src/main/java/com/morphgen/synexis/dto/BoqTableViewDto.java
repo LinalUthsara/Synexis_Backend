@@ -10,6 +10,8 @@ public class BoqTableViewDto {
     
     private Long JobId;
 
+    private String projectName;
+
     private String quotationVersion;
 
     private List<BoqTableDto> boqs;
