@@ -130,4 +130,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + customerDesignNotFoundException.getMessage());
     }
 
+    @ExceptionHandler(value = ProjectDesignNotFoundException.class)
+    public ResponseEntity<String> ProjectDesignNotFoundExceptionHandler (ProjectDesignNotFoundException projectDesignNotFoundException){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("An Unexpected error occured: " + projectDesignNotFoundException.getMessage());
+    }
+
 }

@@ -48,7 +48,7 @@ public class CostEstimationController {
         return ResponseEntity.status(HttpStatus.CREATED).body("New Cost Estimation successfully created!");
     }
 
-    @GetMapping("inquiry/{inquiryId}")
+    @GetMapping("/inquiry/{inquiryId}")
     @PreAuthorize("hasAuthority('ESTIMATION_VIEW')")
     public ResponseEntity<CostEstimationTableViewDto> viewEstimationTableByInquiryId(@PathVariable Long inquiryId) {
         
@@ -75,7 +75,7 @@ public class CostEstimationController {
         return ResponseEntity.status(HttpStatus.OK).body("Estimation successfully updated!");
     }
 
-    @GetMapping("approval/{inquiryId}")
+    @GetMapping("/approval/{inquiryId}")
     @PreAuthorize("hasAuthority('ESTIMATION_APPROVAL_VIEW')")
     public ResponseEntity<CostEstimationTableViewDto> viewEstimationApprovalTable(@PathVariable Long inquiryId) {
         
@@ -84,7 +84,7 @@ public class CostEstimationController {
         return ResponseEntity.status(HttpStatus.OK).body(costEstimationTableViewDto);
     }
 
-    @PatchMapping("approval/{estimationId}")
+    @PatchMapping("/approval/{estimationId}")
     @PreAuthorize("hasAuthority('ESTIMATION_APPROVE')")
     public ResponseEntity<String> handleEstimation(@PathVariable Long estimationId, @RequestParam EstimationStatus estimationStatus){
 

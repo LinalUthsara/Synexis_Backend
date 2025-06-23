@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.morphgen.synexis.enums.BoqStatus;
+import com.morphgen.synexis.enums.DesignStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -23,16 +23,16 @@ import lombok.Data;
 @Entity
 @Data
 
-public class BillOfQuantities {
+public class ProjectDesign {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long boqId;
+    private Long projectDesignId;
 
     @Enumerated(EnumType.STRING)
-    private BoqStatus boqStatus;
+    private DesignStatus projectDesignStatus;
 
-    private String boqVersion;
+    private String projectDesignVersion;
 
     private LocalDateTime updatedAt;
 
@@ -47,19 +47,11 @@ public class BillOfQuantities {
     }
 
     @JsonIgnore
-    @OneToMany(mappedBy = "billOfQuantities", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoqItem> items;
-
-    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "jobId")
-    private Job job;
+    @JoinColumn(name = "boqId")
+    private BillOfQuantities billOfQuantities;
 
-    @OneToMany(mappedBy = "billOfQuantities", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CustomerDesign> customerDesigns;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "billOfQuantities", cascade = CascadeType.ALL)
-    private List<ProjectDesign> projectDesigns;
+    @OneToMany(mappedBy = "projectDesign", cascade = CascadeType.ALL)
+    private List<Design> designs;
 
 }

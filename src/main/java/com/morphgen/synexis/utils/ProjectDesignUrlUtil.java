@@ -2,12 +2,12 @@ package com.morphgen.synexis.utils;
 
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-public class CustomerDesignUrlUtil {
+public class ProjectDesignUrlUtil {
     
-    public static String constructCustomerDesignUrl(Long cDesignId) {
+    public static String constructProjectDesignUrl(Long designId) {
         return ServletUriComponentsBuilder.fromCurrentContextPath()
-            .path("/api/synexis/boq/viewCustomerDesign/")
-            .path(String.valueOf(cDesignId))
+            .path("/api/synexis/projectDesign/viewDesign/")
+            .path(String.valueOf(designId))
             .toUriString();
     }
 

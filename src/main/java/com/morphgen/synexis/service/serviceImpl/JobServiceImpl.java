@@ -549,6 +549,7 @@ public class JobServiceImpl implements JobService {
         List<Attachment> existingAttachments = existingJob.getAttachments();
             
         if (existingAttachments == null) {
+
             existingAttachments = new ArrayList<>();
         }
 
@@ -576,16 +577,16 @@ public class JobServiceImpl implements JobService {
                     existingAttachment.setFileSize(newFile.getSize());
                     updatedAttachments.add(existingAttachment);
                     existingMap.remove(attachmentId);
-                } 
-                catch (IOException e) {
-                    throw new AttachmentProcessingException("Unable to process attachment. Please ensure the attachment is valid and try again!");
-                }
-                }
-                
+                    } 
+                    catch (IOException e) {
+                        throw new AttachmentProcessingException("Unable to process attachment. Please ensure the attachment is valid and try again!");
+                    }
+                }   
             } 
             else {
             
                 if (newFile != null && !newFile.isEmpty()) {
+                    
                     try {
                         Attachment newAttachment = createAttachment(newFile, existingJob);
                         updatedAttachments.add(newAttachment);

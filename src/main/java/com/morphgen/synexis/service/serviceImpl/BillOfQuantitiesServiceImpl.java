@@ -401,7 +401,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
 
                     CustomerDesign newDesign = new CustomerDesign();
                     newDesign.setBillOfQuantities(billOfQuantities);
-                    newDesign.setCDesignname(designFile.getOriginalFilename());
+                    newDesign.setCDesignName(designFile.getOriginalFilename());
                     newDesign.setCDesignType(designFile.getContentType());
                     newDesign.setCDesignSize(designFile.getSize());
                     newDesign.setCDesignData(designFile.getBytes());
@@ -413,7 +413,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
                     if (existingDesignOpt.isPresent()) {
                         CustomerDesign existingDesign = existingDesignOpt.get();
                         if (existingDesign.getBillOfQuantities().getBoqId().equals(boqId)) {
-                            existingDesign.setCDesignname(designFile.getOriginalFilename());
+                            existingDesign.setCDesignName(designFile.getOriginalFilename());
                             existingDesign.setCDesignType(designFile.getContentType());
                             existingDesign.setCDesignSize(designFile.getSize());
                             existingDesign.setCDesignData(designFile.getBytes());
@@ -452,6 +452,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
             .orElseThrow(() -> new DesignProcessingException("BOQ ID: " + boqId + " is not found!"));
 
         CustomerDesignAssetViewDto customerDesignAssetViewDto = new CustomerDesignAssetViewDto();
+        customerDesignAssetViewDto.setJobId(billOfQuantities.getJob().getJobId());
         customerDesignAssetViewDto.setBoqStatus(billOfQuantities.getBoqStatus());
 
         if (billOfQuantities.getCustomerDesigns() != null) {
@@ -464,7 +465,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
 
                 String customerDesignUrl = CustomerDesignUrlUtil.constructCustomerDesignUrl(cdesign.getCDesignId());
                 customerDesignViewDto.setCDesignId(cdesign.getCDesignId());
-                customerDesignViewDto.setCDesignName(cdesign.getCDesignname());
+                customerDesignViewDto.setCDesignName(cdesign.getCDesignName());
                 customerDesignViewDto.setCDesignUrl(customerDesignUrl);
 
                 return customerDesignViewDto;
@@ -489,7 +490,7 @@ public class BillOfQuantitiesServiceImpl implements BillOfQuantitiesService {
 
         String mimeType = customerDesign.getCDesignType() != null ? customerDesign.getCDesignType() : "application/octet-stream";
 
-        String originalCustomerDesignName = customerDesign.getCDesignname();
+        String originalCustomerDesignName = customerDesign.getCDesignName();
 
         String contentDisposition;
         try {
