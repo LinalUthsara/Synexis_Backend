@@ -20,5 +20,4 @@ public interface CostEstimationRepo extends JpaRepository<CostEstimation, Long> 
     
     boolean existsByInquiry_InquiryIdAndEstimationStatus(Long inquiryId, EstimationStatus status);
 
-
 }

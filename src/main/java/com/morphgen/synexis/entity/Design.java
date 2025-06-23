@@ -14,24 +14,24 @@ import lombok.Data;
 @Entity
 @Data
 
-public class CustomerDesign {
+public class Design {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cDesignId;
+    private Long designId;
 
-    private String cDesignName;
+    private String designName;
 
-    private String cDesignType;
+    private String designType;
 
-    private Long cDesignSize;
+    private Long designSize;
 
     @Lob
-    private byte[] cDesignData;
+    private byte[] designData;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "boqId")
-    private BillOfQuantities billOfQuantities;
+    @JoinColumn(name = "projectDesignId")
+    private ProjectDesign projectDesign;
 
 }
