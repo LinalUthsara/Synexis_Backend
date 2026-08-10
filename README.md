@@ -216,7 +216,7 @@ These objectives are directly defined in the project proposal.
 ---
 
 
-## 👥 Project Team
+## Project Team
 
 <p align="center">
 <a href="https://github.com/LinalUthsara">
@@ -238,7 +238,7 @@ These objectives are directly defined in the project proposal.
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
 Potential future extensions can include:
 
