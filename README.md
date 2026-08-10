@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="YOUR_SY NEXIS_LOGO_URL" width="500"/>
+  <img src="https://github.com/LinalUthsara/Synexis_Backend/blob/main/Synexis_Logo.png" width="500"/>
 </p>
 
 <h1 align="center"> Synexis - Integrated Operations Management System </h1>
